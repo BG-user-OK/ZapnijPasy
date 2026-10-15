@@ -1,0 +1,9 @@
+{
+  "config": {
+    "apiKey": "AIzaSyCcXp7KTZECSBVZvL5sGl4jfv6ACLv6Gj8",
+    "authDomain": "zapnij-pasy---pilot.firebaseapp.com",
+    "projectId": "zapnij-pasy---pilot",
+    "databaseURL": "https://zapnij-pasy---pilot-default-rtdb.europe-west1.firebasedatabase.app",
+    "appId": "1:1040165737456:web:0990154d2edf38410b8335"
+  }
+}

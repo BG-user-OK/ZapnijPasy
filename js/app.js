@@ -1,10 +1,11 @@
-// Zapnij Pasy vGPT_1.3.0
-import { Flap } from './flap.js?v=vGPT_1.3.0';
-import { Clock } from './clock.js?v=vGPT_1.3.0';
-import { ViewTransition } from './view-transition.js?v=vGPT_1.3.0';
-import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_1.3.0';
-import { DisplayController } from './display-controller.js?v=vGPT_1.3.0';
-import { startUpdates } from './updates.js?v=vGPT_1.3.0';
+// Zapnij Pasy vGPT_2.0.0
+import { Flap } from './flap.js?v=vGPT_2.0.0';
+import { Clock } from './clock.js?v=vGPT_2.0.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.0.0';
+import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.0.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.0.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.0.0';
+import { startUpdates } from './updates.js?v=vGPT_2.0.0';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -18,6 +19,9 @@ const graphics = {
   rules:[['no-smoking-vaping','Zakaz palenia'],['no-food-drink','Zakaz jedzenia i picia']],
   extras:[['cctv','Monitoring'],['tip','Skarbonka na napiwki']]
 };
+let remote=null;
+let remoteLoading=null;
+let fallbackInteractions=0;
 let controller;
 let transition;
 let currentView = 'clock';
@@ -111,9 +115,10 @@ controller = new DisplayController({effects:{
   insert:()=>buckle.play(),
   freeze:()=>cancelVisuals(true),
   cancel:()=>cancelVisuals(false),
-  idle:()=>checkForUpdates()
+  idle:()=>{remote?.clockRestored();checkForUpdates();}
 }});
 function suspend() {
+  remote?.suspend();
   suspended = true;
   controller.suspend();
   cancelVisuals(false);
@@ -121,13 +126,14 @@ function suspend() {
 function resume() {
   if(document.hidden) return;
   suspended = false;
+  remote?.resume();
   fitViewport();
   if(started) {
     if(controller.suspended) controller.resume();
     else if(currentView==='clock' && !transition.busy && !clock.running) clock.start();
   }
 }
-toggle.addEventListener('click',()=>controller.tap());
+bindHoldControl(toggle,{onTap:()=>{if(remote)remote.localTap();else if(controller.tap())++fallbackInteractions;},onHold:()=>loadRemote({show:true})});
 window.addEventListener('resize',fitViewport);
 window.addEventListener('orientationchange',fitViewport);
 window.visualViewport?.addEventListener('resize',fitViewport);
@@ -145,16 +151,39 @@ Promise.all(requiredAssets.map(name=>new Promise((resolve,reject)=>{
   asset.onload = resolve;
   asset.onerror = ()=>reject(new Error('Sign image unavailable: '+name));
   asset.src = './assets/signs/'+name+'.png';
-}))).then(()=>{
+}))).then(async()=>{
   let saved = {};
   try { saved = JSON.parse(sessionStorage.getItem(UPDATE_STATE)||'{}'); sessionStorage.removeItem(UPDATE_STATE); } catch { /* Start safely if storage is unavailable. */ }
   started = true;
   toggle.disabled = false;
   if(document.hidden) { controller.nextPair=saved.nextPair===1 ? 1 : 0; controller.state={kind:'CLOCK_WAITING_FOR_MINUTE'}; controller.suspend(); }
-  else controller.start(saved || {});
+  else await controller.start(saved || {});
+  try{if(localStorage.getItem('zapnij-pasy-remote-pair-v1'))loadRemote();}catch{/* Local clock remains available. */}
 }).catch(error=>console.warn(error.message));
 checkForUpdates = startUpdates({
   isBusy:()=>transition.busy || modules.some(module=>module.pending!==undefined),
   deferReload:()=>!controller.safeToReload,
   beforeReload:()=>{try{sessionStorage.setItem(UPDATE_STATE,JSON.stringify(controller.snapshot()));}catch{} suspend();}
 }) || (()=>{});
+
+async function loadRemote({show=false}={}) {
+  if(remote){if(show)remote.show();return remote;}
+  if(!remoteLoading)remoteLoading=(async()=>{
+    const [{RemoteDisplay},response]=await Promise.all([
+      import('./remote/display.bundle.js?v=vGPT_2.0.0'),fetch('./firebase-config.json')
+    ]);
+    if(!response.ok)throw new Error('Remote configuration unavailable');
+    const {config}=await response.json();
+    remote=new RemoteDisplay({controller,config,preferLocal:fallbackInteractions>0});
+    await remote.initialize();return remote;
+  })().catch(()=>{remoteLoading=null;console.warn('Pilot niedostępny; zegar i lokalny dotyk działają.');return null;});
+  const ready=await remoteLoading;
+  if(ready&&show)ready.show();
+  else if(show){
+    const panel=document.createElement('section');panel.className='pairing-panel';panel.setAttribute('role','dialog');
+    const text=document.createElement('p');text.textContent='Parowanie niedostępne. Sprawdź połączenie i ponownie otwórz aplikację. Zegar działa lokalnie.';
+    const close=document.createElement('button');close.textContent='Wróć do zegara';close.onclick=()=>panel.remove();
+    panel.append(text,close);document.body.append(panel);
+  }
+  return ready;
+}

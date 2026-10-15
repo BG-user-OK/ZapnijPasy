@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_1.3.0 */
+/* Zapnij Pasy vGPT_2.0.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -147,3 +147,15 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .is-fastened .buckle-tongue { transform:translateX(15%); }
 @keyframes buckle-insert { from { transform:translateX(0); } to { transform:translateX(15%); } }
 @media (prefers-reduced-motion:reduce) { .is-inserting .buckle-tongue { animation:none; transform:translateX(15%); } }
+
+/* Hidden during normal use; opened only by the approved three-second hold. */
+.pairing-panel[hidden]{display:none!important}
+.pairing-panel{position:fixed;inset:0;z-index:100;background:#101114;color:#bbb;padding:12px max(12px,env(safe-area-inset-right)) 12px max(12px,env(safe-area-inset-left));overflow:auto;-webkit-overflow-scrolling:touch;font:14px system-ui;-webkit-user-select:text;user-select:text}
+.pairing-panel h1{font-size:18px;margin:0 0 8px}
+.pairing-panel p{margin:8px 0}
+.pairing-panel button,.pairing-panel textarea{font:inherit;background:#24272a;color:#c4c6c2;border:1px solid #575b60;border-radius:5px;padding:9px;margin:4px}
+.pairing-panel textarea{display:block;width:calc(100% - 8px);resize:none;word-break:break-all}
+.pairing-help{font-size:12px;color:#929693}
+.mode-toggle{-webkit-touch-callout:none}
+
+.pairing-panel [hidden]{display:none!important}

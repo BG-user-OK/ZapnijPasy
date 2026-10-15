@@ -1,5 +1,5 @@
-// Zapnij Pasy vGPT_1.3.0 — quiet, coordinated updates; no installation UI.
-const VERSION = 'vGPT_1.3.0';
+// Zapnij Pasy vGPT_2.0.0 — quiet, coordinated updates; no installation UI.
+const VERSION = 'vGPT_2.0.0';
 const BASE = '/ZapnijPasy/';
 export function startUpdates({ isBusy = () => false, beforeReload = () => {}, deferReload = () => false } = {}) {
   if (!('serviceWorker' in navigator) || !window.isSecureContext) return;

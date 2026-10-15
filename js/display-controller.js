@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_1.3.0 — explicit display sequence; all durations use timestamp deadlines.
+// Zapnij Pasy vGPT_2.0.0 — explicit display sequence; all durations use timestamp deadlines.
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id) }) {
     this.effects = effects;
@@ -72,15 +72,15 @@ export class DisplayController {
     else this.startPassenger();
     return true;
   }
-  startPassenger() {
+  startPassenger({animate = true} = {}) {
     this.enter({kind:'PASSENGER', phase:'interrupt'});
     this.nextPair = 0;
     this.effects.cancel();
-    return this.passengerOne();
+    return this.passengerOne(animate);
   }
-  async passengerOne() {
+  async passengerOne(animate = true) {
     const token = this.enter({kind:'PASSENGER', phase:'one-transition'});
-    if (!await this.reveal('belt-one', token)) return;
+    if (!await this.reveal('belt-one', token, animate)) return;
     this.state.phase = 'one-hold';
     this.waitUntil(this.now()+2000, () => this.passengerTwo(), token);
   }
@@ -93,8 +93,7 @@ export class DisplayController {
     this.state.phase = 'fastened-hold';
     this.waitUntil(this.now()+2000, () => this.passengerOne(), token);
   }
-  confirmPassenger() {
-    const deadline = this.now()+10000;
+  confirmPassenger({deadline = this.now()+10000} = {}) {
     const token = this.enter({kind:'PASSENGER_CONFIRMED_WAIT', phase:'hold'});
     this.effects.freeze();
     this.waitUntil(deadline, () => this.restoreClock(), token);
@@ -109,7 +108,7 @@ export class DisplayController {
     if (!this.suspended) return;
     this.suspended = false;
     const saved = {...this.state};
-    if (saved.kind === 'PASSENGER') return this.startPassenger();
+    if (saved.kind === 'PASSENGER') return this.startPassenger({animate:false});
     if (saved.kind === 'PASSENGER_CONFIRMED_WAIT') {
       if (saved.deadline <= this.now()) return this.restoreClock(false);
       const token = this.enter(saved);

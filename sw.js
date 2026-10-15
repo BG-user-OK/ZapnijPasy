@@ -1,9 +1,9 @@
-// Zapnij Pasy vGPT_1.3.0
-const VERSION = 'vGPT_1.3.0';
+// Zapnij Pasy vGPT_2.0.0
+const VERSION = 'vGPT_2.0.0';
 const PREFIX = 'zapnij-pasy-';
 const CACHE = PREFIX + VERSION;
 const BASE = '/ZapnijPasy/';
-const SHELL = ['./index.html','./styles.css?v=vGPT_1.3.0','./js/app.js?v=vGPT_1.3.0','./js/clock.js?v=vGPT_1.3.0','./js/flap.js?v=vGPT_1.3.0','./js/updates.js?v=vGPT_1.3.0','./js/view-transition.js?v=vGPT_1.3.0','./js/display-controller.js?v=vGPT_1.3.0','./js/seat-belt-animation.js?v=vGPT_1.3.0','./assets/signs/buckle-base.png','./assets/signs/buckle-tongue.png','./assets/signs/seat-belt.png','./assets/signs/no-food-drink.png','./assets/signs/no-smoking-vaping.png','./assets/signs/cctv.png','./assets/signs/tip.png','./manifest.webmanifest','./icons/apple-touch-icon.png','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png'];
+const SHELL = ['./js/hold-control.js?v=vGPT_2.0.0','./js/remote/display.bundle.js?v=vGPT_2.0.0','./js/remote/transport.bundle.js?v=vGPT_2.0.0','./firebase-config.json','./pilot-proof.html','./pilot-proof.js?v=vGPT_2.0.0','./index.html','./styles.css?v=vGPT_2.0.0','./js/app.js?v=vGPT_2.0.0','./js/clock.js?v=vGPT_2.0.0','./js/flap.js?v=vGPT_2.0.0','./js/updates.js?v=vGPT_2.0.0','./js/view-transition.js?v=vGPT_2.0.0','./js/display-controller.js?v=vGPT_2.0.0','./js/seat-belt-animation.js?v=vGPT_2.0.0','./assets/signs/buckle-base.png','./assets/signs/buckle-tongue.png','./assets/signs/seat-belt.png','./assets/signs/no-food-drink.png','./assets/signs/no-smoking-vaping.png','./assets/signs/cctv.png','./assets/signs/tip.png','./manifest.webmanifest','./icons/apple-touch-icon.png','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png'];
 const URLS = new Set(SHELL.map(path => new URL(path, self.location).href));
 const readyClients = new Set();
 self.addEventListener('install', event => {
@@ -25,7 +25,7 @@ self.addEventListener('message', event => {
 });
 async function navigation(request) {
   const cache = await caches.open(CACHE);
-  const fallback = await cache.match(new URL('./index.html',self.location).href);
+  const fallback = await cache.match(new URL(new URL(request.url).pathname.endsWith('/pilot-proof.html')?'./pilot-proof.html':'./index.html',self.location).href);
   const controller = new AbortController();
   let timer;
   try {
