@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_1.2.0 — four physical flaps between complete views.
+// Zapnij Pasy vGPT_1.3.0 — four physical flaps between complete views.
 export class ViewTransition {
   constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 680 } = {}) {
     this.stage = stage;
@@ -12,6 +12,7 @@ export class ViewTransition {
     this.mode = 'clock';
     this.busy = false;
     this.timer = null;
+    this.waiters = [];
     this.overlay = document.createElement('div');
     this.overlay.className = 'view-transition';
     this.overlay.setAttribute('aria-hidden', 'true');
@@ -43,15 +44,16 @@ export class ViewTransition {
 
   toggle() { return this.show(this.mode === 'clock' ? 'signs' : 'clock'); }
 
-  show(target) {
-    if (this.busy || target === this.mode || !this.views[target]) return false;
+  show(target, { animate = true, prepare = () => {}, force = false } = {}) {
+    if (this.busy || (target === this.mode && !force) || !this.views[target]) return false;
     this.beforeChange(target);
     const outgoing = this.views[this.mode].cloneNode(true);
+    prepare();
     this.beforeReveal(target);
     this.mode = target;
     this.busy = true;
     this.applyMode();
-    if (this.reducedMotion()) { this.finish(); return true; }
+    if (!animate || this.reducedMotion()) { this.finish(); return true; }
     const { width, height } = this.stage.getBoundingClientRect();
     const incoming = this.views[target];
     const lower = document.createElement('div');
@@ -79,6 +81,11 @@ export class ViewTransition {
     return true;
   }
 
+  whenFinished() {
+    if (!this.busy) return Promise.resolve();
+    return new Promise(resolve => this.waiters.push(resolve));
+  }
+
   finish() {
     if (!this.busy) return;
     clearTimeout(this.timer);
@@ -88,5 +95,6 @@ export class ViewTransition {
     this.lastPanel = null;
     this.busy = false;
     this.onFinish(this.mode);
+    this.waiters.splice(0).forEach(resolve => resolve());
   }
 }

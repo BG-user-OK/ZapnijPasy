@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_1.2.0 — reusable flap; the caller supplies content and rendering.
+// Zapnij Pasy vGPT_1.3.0 — reusable flap; the caller supplies content and rendering.
 export class Flap {
   constructor(element, { render = (host, value) => {
     const text = document.createElement('span');
@@ -11,6 +11,7 @@ export class Flap {
     this.value = undefined;
     this.pending = undefined;
     this.timer = null;
+    this.waiters = [];
     this.faces = {};
     for (const name of ['upper', 'lower', 'moving-upper', 'moving-lower']) {
       const half = document.createElement('div');
@@ -55,6 +56,11 @@ export class Flap {
     return true;
   }
 
+  whenFinished() {
+    if (this.pending === undefined) return Promise.resolve();
+    return new Promise(resolve => this.waiters.push(resolve));
+  }
+
   finish() {
     clearTimeout(this.timer);
     this.timer = null;
@@ -65,5 +71,6 @@ export class Flap {
       this.paint('lower', this.value);
     }
     this.element.classList.remove('is-flipping');
+    this.waiters.splice(0).forEach(resolve => resolve());
   }
 }
