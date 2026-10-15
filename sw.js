@@ -1,9 +1,9 @@
-// Zapnij Pasy 1.1.0
-const VERSION = '1.1.0';
+// Zapnij Pasy 1.1.1
+const VERSION = '1.1.1';
 const PREFIX = 'zapnij-pasy-';
 const CACHE = PREFIX + VERSION;
 const BASE = '/ZapnijPasy/';
-const SHELL = ['./index.html','./styles.css?v=1.1.0','./js/app.js?v=1.1.0','./js/clock.js?v=1.1.0','./js/flap.js?v=1.1.0','./js/updates.js?v=1.1.0','./manifest.webmanifest','./icons/apple-touch-icon.png','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png'];
+const SHELL = ['./index.html','./styles.css?v=1.1.1','./js/app.js?v=1.1.1','./js/clock.js?v=1.1.1','./js/flap.js?v=1.1.1','./js/updates.js?v=1.1.1','./manifest.webmanifest','./icons/apple-touch-icon.png','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png'];
 const URLS = new Set(SHELL.map(path => new URL(path, self.location).href));
 const readyClients = new Set();
 self.addEventListener('install', event => {

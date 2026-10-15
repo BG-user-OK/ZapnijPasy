@@ -1,6 +1,6 @@
 # Zapnij Pasy
 
-Version 1.1.0. A dark mechanical flip clock PWA for iPhone 7 in landscape.
+Version 1.1.1. A dark mechanical flip clock PWA for iPhone 7 in landscape.
 
 Open https://bg-user-ok.github.io/ZapnijPasy/ in Safari, choose Share → Add to Home Screen, launch the icon and rotate the phone manually.
 
