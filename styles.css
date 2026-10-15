@@ -1,0 +1,109 @@
+/* Zapnij Pasy 1.1.0 */
+:root {
+  color-scheme: dark;
+  --page: #08090b;
+  --ink: #b6b8b5;
+  --card-height: 300px;
+  --digit-size: 339px;
+  --gap: 8px;
+  --radius: 9px;
+  --flip-duration: 560ms;
+}
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--page); }
+body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-select: none; user-select: none; }
+.clock {
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  display: grid;
+  grid-template-columns: 1fr 1fr minmax(10px, 0.10fr) 1fr 1fr;
+  align-items: center;
+  gap: var(--gap);
+}
+.digit {
+  position: relative;
+  min-width: 0;
+  height: var(--card-height);
+  border-radius: var(--radius);
+  perspective: 1100px;
+  isolation: isolate;
+  box-shadow: 0 5px 9px #0008, 0 1px 1px #000;
+}
+.half {
+  position: absolute;
+  left: 0; width: 100%; height: 50%;
+  overflow: hidden;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  background: linear-gradient(180deg, #26292c 0%, #202225 74%, #1b1d20 100%);
+  box-shadow: inset 0 1px 0 #ffffff09, inset 1px 0 0 #ffffff04, inset -1px 0 0 #0006;
+}
+.half--upper { top: 0; border-radius: var(--radius) var(--radius) 2px 2px; }
+.half--lower {
+  top: 50%; border-radius: 2px 2px var(--radius) var(--radius);
+  background: linear-gradient(180deg, #1b1d20 0%, #222427 35%, #25272a 100%);
+  box-shadow: inset 0 2px 4px #0007, inset 0 -1px 0 #ffffff06, inset 1px 0 0 #ffffff04, inset -1px 0 0 #0006;
+}
+.face-content {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: var(--card-height);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: var(--digit-size);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  text-shadow: 0 1px 1px #0009;
+}
+.face-content > span { display: block; transform: scaleX(0.79); }
+.half--lower .face-content { top: calc(var(--card-height) * -0.5); color: #b0b2af; }
+.half--moving-upper, .half--moving-lower { display: none; z-index: 3; }
+.half--moving-upper { transform-origin: center bottom; }
+.half--moving-lower { transform-origin: center top; transform: rotateX(90deg); }
+.half--moving-upper::after, .half--moving-lower::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; background: #000; opacity: 0;
+}
+.is-flipping .half--moving-upper {
+  display: block;
+  animation: upper-fall var(--flip-duration) both;
+  will-change: transform;
+}
+.is-flipping .half--moving-lower {
+  display: block;
+  animation: lower-fall var(--flip-duration) both;
+  will-change: transform;
+}
+.is-flipping .half--moving-upper::after { animation: upper-shade var(--flip-duration) both; }
+.is-flipping .half--moving-lower::after { animation: lower-shade var(--flip-duration) both; }
+.seam {
+  position: absolute; z-index: 5; top: calc(50% - 1px); left: 0; width: 100%; height: 2px;
+  background: #060708; box-shadow: 0 1px 0 #ffffff08, 0 -1px 1px #0009; pointer-events: none;
+}
+.hinge {
+  position: absolute; z-index: 6; top: calc(50% - 7px); width: 5px; height: 14px;
+  border: 1px solid #090a0b; border-radius: 2px;
+  background: linear-gradient(90deg, #111315, #45484a 43%, #242729 70%, #101214);
+  box-shadow: 1px 1px 2px #000a;
+  pointer-events: none;
+}
+.hinge--left { left: 3px; }
+.hinge--right { right: 3px; }
+.colon { height: var(--card-height); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--card-height) * 0.17); }
+.colon i { display: block; width: 5px; height: 6px; border-radius: 2px; background: #737773; box-shadow: 0 1px 1px #000; }
+@keyframes upper-fall {
+  0% { transform: rotateX(0deg); animation-timing-function: cubic-bezier(.55,.02,.95,.5); }
+  48%, 100% { transform: rotateX(-90deg); }
+}
+@keyframes lower-fall {
+  0%, 48% { transform: rotateX(90deg); animation-timing-function: cubic-bezier(.14,.55,.3,1); }
+  100% { transform: rotateX(0deg); }
+}
+@keyframes upper-shade { 0% { opacity: 0; } 48%, 100% { opacity: .65; } }
+@keyframes lower-shade { 0%, 48% { opacity: .6; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .is-flipping .half { animation: none; }
+}
