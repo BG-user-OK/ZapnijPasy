@@ -1,0 +1,92 @@
+// Zapnij Pasy vGPT_1.2.0 — four physical flaps between complete views.
+export class ViewTransition {
+  constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 680 } = {}) {
+    this.stage = stage;
+    this.views = views;
+    this.beforeChange = beforeChange;
+    this.beforeReveal = beforeReveal;
+    this.onChange = onChange;
+    this.onFinish = onFinish;
+    this.reducedMotion = reducedMotion;
+    this.duration = duration;
+    this.mode = 'clock';
+    this.busy = false;
+    this.timer = null;
+    this.overlay = document.createElement('div');
+    this.overlay.className = 'view-transition';
+    this.overlay.setAttribute('aria-hidden', 'true');
+    this.overlay.style.setProperty('--view-flip-duration', duration + 'ms');
+    stage.append(this.overlay);
+    this.overlay.addEventListener('animationend', event => {
+      if (event.animationName === 'view-flap-fall' && event.target === this.lastPanel) this.finish();
+    });
+    this.applyMode();
+  }
+
+  applyMode() {
+    this.stage.dataset.mode = this.mode;
+    for (const [name, element] of Object.entries(this.views)) element.setAttribute('aria-hidden', String(name !== this.mode));
+    this.onChange(this.mode);
+  }
+
+  capture(view, x, y, width, height) {
+    const viewport = document.createElement('div');
+    viewport.className = 'snapshot-viewport';
+    Object.assign(viewport.style, { width:width + 'px', height:height + 'px', left:-x + 'px', top:-y + 'px' });
+    const clone = view.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.setAttribute('aria-hidden', 'true');
+    Object.assign(clone.style, { visibility:'visible', left:'0px', top:'0px', width:width + 'px', height:height + 'px' });
+    viewport.append(clone);
+    return viewport;
+  }
+
+  toggle() { return this.show(this.mode === 'clock' ? 'signs' : 'clock'); }
+
+  show(target) {
+    if (this.busy || target === this.mode || !this.views[target]) return false;
+    this.beforeChange(target);
+    const outgoing = this.views[this.mode].cloneNode(true);
+    this.beforeReveal(target);
+    this.mode = target;
+    this.busy = true;
+    this.applyMode();
+    if (this.reducedMotion()) { this.finish(); return true; }
+    const { width, height } = this.stage.getBoundingClientRect();
+    const incoming = this.views[target];
+    const lower = document.createElement('div');
+    lower.className = 'transition-bottom';
+    lower.append(this.capture(outgoing, 0, height / 2, width, height));
+    this.overlay.append(lower);
+    for (let index = 0; index < 4; index++) {
+      const left = width * index / 4;
+      const panel = document.createElement('div');
+      panel.className = 'transition-panel';
+      Object.assign(panel.style, { left:left + 'px', width:width / 4 + 'px' });
+      for (const side of ['front', 'back']) {
+        const face = document.createElement('div');
+        face.className = 'transition-face transition-face--' + side;
+        face.append(this.capture(side === 'front' ? outgoing : incoming, left, side === 'front' ? 0 : height / 2, width, height));
+        panel.append(face);
+      }
+      this.overlay.append(panel);
+      this.lastPanel = panel;
+    }
+    this.overlay.classList.add('is-visible');
+    void this.overlay.offsetHeight;
+    this.overlay.classList.add('is-running');
+    this.timer = setTimeout(() => this.finish(), this.duration + 150);
+    return true;
+  }
+
+  finish() {
+    if (!this.busy) return;
+    clearTimeout(this.timer);
+    this.timer = null;
+    this.overlay.classList.remove('is-running', 'is-visible');
+    this.overlay.replaceChildren();
+    this.lastPanel = null;
+    this.busy = false;
+    this.onFinish(this.mode);
+  }
+}

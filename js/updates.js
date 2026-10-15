@@ -1,7 +1,7 @@
-// Zapnij Pasy 1.1.1 — quiet, coordinated updates; no installation UI.
-const VERSION = '1.1.1';
+// Zapnij Pasy vGPT_1.2.0 — quiet, coordinated updates; no installation UI.
+const VERSION = 'vGPT_1.2.0';
 const BASE = '/ZapnijPasy/';
-export function startUpdates({ isBusy = () => false, beforeReload = () => {} } = {}) {
+export function startUpdates({ isBusy = () => false, beforeReload = () => {}, deferReload = () => false } = {}) {
   if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
   let registration;
   let checkInProgress = false;
@@ -14,7 +14,7 @@ export function startUpdates({ isBusy = () => false, beforeReload = () => {} } =
   }
   function refreshWhenIdle() {
     clearTimeout(retryTimer);
-    if (!reloadPending || reloading || document.hidden) return;
+    if (!reloadPending || reloading || document.hidden || deferReload()) return;
     if (isBusy()) { retryTimer = setTimeout(refreshWhenIdle, 100); return; }
     reloading = true;
     beforeReload();
@@ -52,4 +52,5 @@ export function startUpdates({ isBusy = () => false, beforeReload = () => {} } =
   window.addEventListener('online', check);
   window.addEventListener('pageshow', check);
   setInterval(check, 60000);
+  return check;
 }
