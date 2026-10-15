@@ -1,11 +1,11 @@
 # Zapnij Pasy
 
-Version 1.1.1. A dark mechanical flip clock PWA for iPhone 7 in landscape.
+Version vGPT_1.2.0. Dark mechanical flip clock and two passenger signs for iPhone 7 in landscape.
 
-Open https://bg-user-ok.github.io/ZapnijPasy/ in Safari, choose Share → Add to Home Screen, launch the icon and rotate the phone manually.
+Open https://bg-user-ok.github.io/ZapnijPasy/ in Safari, choose Share → Add to Home Screen, launch the icon and rotate manually. From an in-app browser, first use its compass button to open full Safari.
 
-Four large flap modules display local 24-hour HH:MM time. Only changing digits animate. Returning to the app resynchronizes device time immediately. No controls or unrelated features.
+Tap the first digit's area to reveal two complete signs: seat belt on the left, no food/drink on the right. Four upper flaps fall together to reveal the signs. Tap the same area again to reveal the current clock with the same animation. Repeated taps are ignored during the transition. No timeout or extra visible controls.
 
-The app works offline after a successful online setup. Updates download a complete bundle and refresh an idle page after activation. iOS may evict website storage. Display brightness and Auto-Lock remain phone settings; no Wake Lock or orientation-lock APIs are used.
+Five supplied signs are available as individual transparent PNG assets. Only seat belt and no food/drink are active. The clock and display animation use local assets; no external services or backend are needed.
 
-Physical iPhone 7 visual and performance acceptance remains pending.
+After an initial successful online setup the app can reopen offline. Updates install a complete bundle and defer page refresh while passenger signs are visible. Device brightness and Auto-Lock remain phone settings; no Wake Lock or orientation-lock API is used. Physical iPhone 7 acceptance of this new feature remains pending.

@@ -1,9 +1,9 @@
-// Zapnij Pasy 1.1.1
-const VERSION = '1.1.1';
+// Zapnij Pasy vGPT_1.2.0
+const VERSION = 'vGPT_1.2.0';
 const PREFIX = 'zapnij-pasy-';
 const CACHE = PREFIX + VERSION;
 const BASE = '/ZapnijPasy/';
-const SHELL = ['./index.html','./styles.css?v=1.1.1','./js/app.js?v=1.1.1','./js/clock.js?v=1.1.1','./js/flap.js?v=1.1.1','./js/updates.js?v=1.1.1','./manifest.webmanifest','./icons/apple-touch-icon.png','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png'];
+const SHELL = ['./index.html','./styles.css?v=vGPT_1.2.0','./js/app.js?v=vGPT_1.2.0','./js/clock.js?v=vGPT_1.2.0','./js/flap.js?v=vGPT_1.2.0','./js/updates.js?v=vGPT_1.2.0','./js/view-transition.js?v=vGPT_1.2.0','./assets/signs/seat-belt.png','./assets/signs/no-food-drink.png','./assets/signs/no-smoking-vaping.png','./assets/signs/cctv.png','./assets/signs/tip.png','./manifest.webmanifest','./icons/apple-touch-icon.png','./icons/icon-192.png','./icons/icon-512.png','./icons/maskable-512.png'];
 const URLS = new Set(SHELL.map(path => new URL(path, self.location).href));
 const readyClients = new Set();
 self.addEventListener('install', event => {
@@ -59,5 +59,5 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE)) return;
   if (event.request.mode === 'navigate') event.respondWith(navigation(event.request));
-  else if (URLS.has(url.href) || (/\.(js|css)$/.test(url.pathname) && /^\d+\.\d+\.\d+$/.test(url.searchParams.get('v') || ''))) event.respondWith(asset(event.request));
+  else if (URLS.has(url.href) || (/\.(js|css)$/.test(url.pathname) && /^(?:vGPT_)?\d+\.\d+\.\d+$/.test(url.searchParams.get('v') || ''))) event.respondWith(asset(event.request));
 });

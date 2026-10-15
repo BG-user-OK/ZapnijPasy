@@ -9,21 +9,28 @@
   <meta name="apple-mobile-web-app-title" content="Zapnij Pasy">
   <meta name="application-name" content="Zapnij Pasy">
   <meta name="description" content="Spokojny, mechaniczny zegar klapkowy.">
-  <meta name="app-version" content="1.1.1">
+  <meta name="app-version" content="vGPT_1.2.0">
   <title>Zapnij Pasy</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=1.1.1">
-  <script type="module" src="./js/app.js?v=1.1.1"></script>
+  <link rel="stylesheet" href="./styles.css?v=vGPT_1.2.0">
+  <script type="module" src="./js/app.js?v=vGPT_1.2.0"></script>
 </head>
 <body>
-  <main class="clock" role="timer" aria-live="off" aria-label="Zegar">
+  <main class="stage" data-mode="clock" aria-label="Zapnij Pasy">
+  <section class="clock" id="clock-view" role="timer" aria-live="off" aria-label="Zegar">
     <div class="digit" aria-hidden="true"></div>
     <div class="digit" aria-hidden="true"></div>
     <div class="colon" aria-hidden="true"><i></i><i></i></div>
     <div class="digit" aria-hidden="true"></div>
     <div class="digit" aria-hidden="true"></div>
+  </section>
+  <section class="signs" id="signs-view" aria-label="Zapnij pasy. Zakaz jedzenia i picia." aria-hidden="true">
+    <img src="./assets/signs/seat-belt.png" width="512" height="512" alt="Zapnij pasy">
+    <img src="./assets/signs/no-food-drink.png" width="512" height="512" alt="Zakaz jedzenia i picia">
+  </section>
+  <button class="mode-toggle" type="button" aria-controls="clock-view signs-view" aria-pressed="false" aria-label="Nowy pasażer — pokaż pasy i zakaz jedzenia" disabled></button>
   </main>
   <noscript>Włącz JavaScript, aby wyświetlić zegar.</noscript>
 </body>
