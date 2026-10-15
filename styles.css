@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_1.2.0 */
+/* Zapnij Pasy vGPT_1.3.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -111,7 +111,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 /* Two complete signs; the first digit's existing area remains the only control. */
 .stage { position:absolute; left:0; top:0; width:100%; height:100%; overflow:hidden; }
 .signs { position:absolute; inset:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); align-items:center; justify-items:center; gap:12px; padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left)); background:var(--page); visibility:hidden; }
-.signs img { display:block; width:100%; height:100%; min-width:0; min-height:0; max-height:100%; object-fit:contain; }
+.signs > img { display:block; width:100%; height:100%; min-width:0; min-height:0; max-height:100%; object-fit:contain; filter:brightness(.46); }
 .stage[data-mode="signs"] > .clock { visibility:hidden; }
 .stage[data-mode="signs"] > .signs { visibility:visible; }
 .mode-toggle { position:absolute; z-index:30; margin:0; padding:0; border:0; border-radius:var(--radius); background:transparent; color:transparent; -webkit-appearance:none; appearance:none; -webkit-tap-highlight-color:transparent; touch-action:manipulation; cursor:pointer; }
@@ -135,3 +135,15 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 @keyframes view-front-shade { 0% { opacity:0; } 48%,100% { opacity:.55; } }
 @keyframes view-back-shade { 0%,48% { opacity:.5; } 100% { opacity:0; } }
 @media (prefers-reduced-motion:reduce) { .view-transition { display:none !important; } }
+
+/* Equal content regions keep the supplied sign design; only the tongue moves. */
+.buckle { position:relative; width:var(--sign-size); height:var(--sign-size); max-width:100%; overflow:hidden; filter:brightness(.46); }
+.buckle img { display:block; position:absolute; inset:0; width:100%; height:100%; object-fit:contain; }
+.buckle-base { z-index:0; }
+.buckle-tail { z-index:1; clip-path:inset(40% 69% 42% 14%); -webkit-clip-path:inset(40% 69% 42% 14%); }
+.buckle-tongue { z-index:2; transform:translateX(0); }
+.buckle-front { z-index:3; clip-path:inset(36% 28% 38% 50%); -webkit-clip-path:inset(36% 28% 38% 50%); }
+.is-inserting .buckle-tongue { animation:buckle-insert var(--buckle-duration) cubic-bezier(.35,.05,.25,1) both; will-change:transform; }
+.is-fastened .buckle-tongue { transform:translateX(15%); }
+@keyframes buckle-insert { from { transform:translateX(0); } to { transform:translateX(15%); } }
+@media (prefers-reduced-motion:reduce) { .is-inserting .buckle-tongue { animation:none; transform:translateX(15%); } }
