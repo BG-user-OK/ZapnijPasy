@@ -1,5 +1,5 @@
-// Zapnij Pasy 1.1.0 — quiet, coordinated updates; no installation UI.
-const VERSION = '1.1.0';
+// Zapnij Pasy 1.1.1 — quiet, coordinated updates; no installation UI.
+const VERSION = '1.1.1';
 const BASE = '/ZapnijPasy/';
 export function startUpdates({ isBusy = () => false, beforeReload = () => {} } = {}) {
   if (!('serviceWorker' in navigator) || !window.isSecureContext) return;

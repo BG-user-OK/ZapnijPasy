@@ -1,4 +1,4 @@
-// Zapnij Pasy 1.1.0 — no DOM dependencies; always derive time from the device.
+// Zapnij Pasy 1.1.1 — no DOM dependencies; always derive time from the device.
 export function readTime(date = new Date()) {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
@@ -16,7 +16,7 @@ export function shouldAnimate(previous, next, elapsed, force = false) {
 }
 
 export class Clock {
-  constructor({ update, now = () => new Date(), monotonic = () => performance.now(), schedule = setTimeout, cancel = clearTimeout }) {
+  constructor({ update, now = () => new Date(), monotonic = () => performance.now(), schedule = (callback, delay) => setTimeout(callback, delay), cancel = handle => clearTimeout(handle) }) {
     this.update = update;
     this.now = now;
     this.monotonic = monotonic;

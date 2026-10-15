@@ -1,7 +1,7 @@
-// Zapnij Pasy 1.1.0
-import { Flap } from './flap.js?v=1.1.0';
-import { Clock } from './clock.js?v=1.1.0';
-import { startUpdates } from './updates.js?v=1.1.0';
+// Zapnij Pasy 1.1.1
+import { Flap } from './flap.js?v=1.1.1';
+import { Clock } from './clock.js?v=1.1.1';
+import { startUpdates } from './updates.js?v=1.1.1';
 
 const root = document.querySelector('.clock');
 const modules = Array.from(root.querySelectorAll('.digit'), element => new Flap(element));
