@@ -9,22 +9,19 @@
   <meta name="apple-mobile-web-app-title" content="Zapnij Pasy">
   <meta name="application-name" content="Zapnij Pasy">
   <meta name="description" content="Spokojny, mechaniczny zegar klapkowy.">
-  <meta name="app-version" content="vGPT_2.1.0">
+  <meta name="app-version" content="vGPT_2.2.0">
   <title>Zapnij Pasy</title>
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=vGPT_2.1.0">
-  <script type="module" src="./js/app.js?v=vGPT_2.1.0"></script>
+  <link rel="stylesheet" href="./styles.css?v=vGPT_2.2.0">
+  <script type="module" src="./js/app.js?v=vGPT_2.2.0"></script>
 </head>
 <body>
   <main class="stage" data-mode="clock" aria-label="Zapnij Pasy">
   <section class="clock" id="clock-view" role="timer" aria-live="off" aria-label="Zegar">
-    <div class="digit" aria-hidden="true"></div>
-    <div class="digit" aria-hidden="true"></div>
-    <div class="colon" aria-hidden="true"><i></i><i></i></div>
-    <div class="digit" aria-hidden="true"></div>
-    <div class="digit" aria-hidden="true"></div>
+    <div class="digit hours" aria-hidden="true"></div>
+    <div class="digit minutes" aria-hidden="true"></div>
   </section>
   <section class="signs" id="signs-view" aria-label="Komunikaty" aria-hidden="true"></section>
   <button class="mode-toggle" type="button" aria-controls="clock-view signs-view" aria-pressed="false" aria-label="Nowy pasażer — pokaż przypomnienie o pasach" disabled></button>

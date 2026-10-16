@@ -1,11 +1,11 @@
-// Zapnij Pasy vGPT_2.1.0
-import { Flap } from './flap.js?v=vGPT_2.1.0';
-import { Clock } from './clock.js?v=vGPT_2.1.0';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.1.0';
-import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.1.0';
-import { DisplayController } from './display-controller.js?v=vGPT_2.1.0';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.1.0';
-import { startUpdates } from './updates.js?v=vGPT_2.1.0';
+// Zapnij Pasy vGPT_2.2.0
+import { Flap } from './flap.js?v=vGPT_2.2.0';
+import { Clock } from './clock.js?v=vGPT_2.2.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.2.0';
+import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.2.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.2.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.2.0';
+import { startUpdates } from './updates.js?v=vGPT_2.2.0';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -40,11 +40,11 @@ function fitViewport() {
   stage.style.setProperty('--gap', gap+'px');
   const style = getComputedStyle(root);
   const usableHeight = height-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom);
-  const usableWidth = width-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-gap*4;
-  const moduleWidth = usableWidth/4.1;
-  const cardHeight = Math.max(1,Math.floor(Math.min(usableHeight,moduleWidth*2.32)));
+  const usableWidth = width-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight)-gap;
+  const moduleWidth = usableWidth/2;
+  const cardHeight = Math.max(1,Math.floor(Math.min(usableHeight,moduleWidth*1.14)));
   stage.style.setProperty('--card-height',cardHeight+'px');
-  stage.style.setProperty('--digit-size',Math.floor(Math.min(cardHeight*1.16,moduleWidth*2.10))+'px');
+  stage.style.setProperty('--digit-size',Math.floor(Math.min(cardHeight*1.14,moduleWidth*.94))+'px');
   stage.style.setProperty('--sign-size',Math.floor(Math.min(usableHeight,(width-36)/2))+'px');
   const first = modules[0].element.getBoundingClientRect();
   const bounds = stage.getBoundingClientRect();
@@ -170,7 +170,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.1.0'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.2.0'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

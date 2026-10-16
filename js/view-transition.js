@@ -1,6 +1,6 @@
-// Zapnij Pasy vGPT_2.1.0 — four physical flaps between complete views.
+// Zapnij Pasy vGPT_2.2.0 — two physical flaps between complete views.
 export class ViewTransition {
-  constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 680 } = {}) {
+  constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 820 } = {}) {
     this.stage = stage;
     this.views = views;
     this.beforeChange = beforeChange;
@@ -60,11 +60,11 @@ export class ViewTransition {
     lower.className = 'transition-bottom';
     lower.append(this.capture(outgoing, 0, height / 2, width, height));
     this.overlay.append(lower);
-    for (let index = 0; index < 4; index++) {
-      const left = width * index / 4;
+    for (let index = 0; index < 2; index++) {
+      const left = width * index / 2;
       const panel = document.createElement('div');
       panel.className = 'transition-panel';
-      Object.assign(panel.style, { left:left + 'px', width:width / 4 + 'px' });
+      Object.assign(panel.style, { left:left + 'px', width:width / 2 + 'px' });
       for (const side of ['front', 'back']) {
         const face = document.createElement('div');
         face.className = 'transition-face transition-face--' + side;
