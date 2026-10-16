@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.0.0 — one shared CSS animation start for both independent tongues.
+// Zapnij Pasy vGPT_2.1.0 — one shared CSS animation start for both independent tongues.
 export class SeatBeltAnimation {
   constructor(host, { reducedMotion = () => false, duration = 800, schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id) } = {}) {
     this.host = host;

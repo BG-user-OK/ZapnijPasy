@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.0.0 — no DOM dependencies; always derive time from the device.
+// Zapnij Pasy vGPT_2.1.0 — no DOM dependencies; always derive time from the device.
 export function readTime(date = new Date()) {
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');

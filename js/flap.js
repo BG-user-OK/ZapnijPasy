@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.0.0 — reusable flap; the caller supplies content and rendering.
+// Zapnij Pasy vGPT_2.1.0 — reusable flap; the caller supplies content and rendering.
 export class Flap {
   constructor(element, { render = (host, value) => {
     const text = document.createElement('span');

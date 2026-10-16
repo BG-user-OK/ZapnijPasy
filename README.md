@@ -1,4 +1,4 @@
-# Zapnij Pasy — vGPT_2.0.0
+# Zapnij Pasy — vGPT_2.1.0
 
 A dark mechanical HH:MM clock PWA for iPhone 7 / iOS 15 in landscape. Four independent digit flaps and their hinges retain the existing clock design. Time always comes from the device.
 
@@ -20,10 +20,10 @@ Stage 1 phone acceptance build. Physical-device verification and the native Andr
 
 Hold the first digit for approximately three seconds to open pairing. Ordinary short taps keep their existing passenger behavior. Create a one-time link, open it on the driver's phone, compare the eight-character device identifier on both screens and approve that phone on the iPhone. The invitation expires after two minutes and cannot be reused.
 
-The acceptance controller is [pilot-proof.html](./pilot-proof.html). It explicitly separates a requested command, a committed database write and an acknowledgment from the display after the actual state transition. This is a temporary phone test page; the native Android shortcut and floating X are not implemented in this release.
+The acceptance controller is [pilot-proof.html](./pilot-proof.html). It explicitly separates a requested command, a committed database write and an acknowledgment from the display after the actual state transition. This remains a temporary phone test page. The native Android companion is now available from [the installation page](./pilot-install.html).
 
 The paired display uses Firebase Spark Authentication and one Realtime Database in Belgium. Only the two paired identities can use the pair. Commands expire within fifteen seconds, are claimed from the server before execution and never enter an offline send queue. Reconnection rotates the display generation. Duplicate START does not restart an active passenger loop; duplicate confirmation does not extend the ten-second delay.
 
 Local short taps use the same session/revision and take priority over a conflicting remote transition. The core clock and local passenger cycle remain available without Firebase or internet. The connection is paused while the display is hidden; delivery while the iPhone is suspended is not guaranteed.
 
-Physical iPhone 7/iOS 15 and Pixel acceptance is pending. The native Android controller remains gated on that Stage 1 acceptance.
+Stage 1 phone communication was accepted by the user on 2026-10-16. The Kotlin companion provides a START shortcut and temporary draggable X after display acknowledgment. Physical native Pixel/Google Maps acceptance remains pending. The APK and installation guide are online-only and are not part of the clock offline cache.
