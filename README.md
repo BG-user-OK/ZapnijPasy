@@ -1,4 +1,4 @@
-# Zapnij Pasy — vGPT_2.2.1
+# Zapnij Pasy — vGPT_2.2.2
 
 A two-module mechanical H/HH + MM clock PWA for iPhone 7 / iOS 15 in landscape. Hours 0–23 and two-digit minutes each occupy one complete split-flap assembly with two hinge clips. Hours have no leading zero and remain centered. A single square beside the hour replaces the colon. Only changed complete modules flip. Time always comes from the device.
 
@@ -29,3 +29,5 @@ Local short taps on the hours module use the same session/revision and take prio
 Stage 1 phone communication was accepted by the user on 2026-10-16. The Kotlin companion provides a START shortcut and temporary draggable X after display acknowledgment. Physical native Pixel/Google Maps acceptance remains pending. The APK remains local and is not published to GitHub or Pages. The public installation guide is online-only and is not part of the clock offline cache.
 
 The time flaps use one rigid double-sided leaf over 800 ms. Whole-view transitions take 820 ms; the 2/10/60-second procedure and 800 ms buckle insertion remain unchanged. Native Android APK vGPT_2.1.0 needs no update or re-pairing for this appearance release. Physical iPhone 7 visual/daylight testing remains required.
+
+All active display graphics and installation icons are organized under Grafiki/. Non-piggy sign rings share a thinner consistent width; both prohibition slashes match. The piggy image and buckle mechanism retain their approved appearance.

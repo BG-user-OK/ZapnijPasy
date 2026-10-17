@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.2.1 — Stage 1 development work.
+// Zapnij Pasy vGPT_2.2.2 — Stage 1 development work.
 // Stage 1: transport-independent, durable and idempotent passenger commands.
 // Local time display is deliberately outside this module.
 const TYPES = new Set(['START_PASSENGER','CONFIRM_BELTS']);

@@ -1,11 +1,11 @@
-// Zapnij Pasy vGPT_2.2.1
-import { Flap } from './flap.js?v=vGPT_2.2.1';
-import { Clock } from './clock.js?v=vGPT_2.2.1';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.2.1';
-import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.2.1';
-import { DisplayController } from './display-controller.js?v=vGPT_2.2.1';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.2.1';
-import { startUpdates } from './updates.js?v=vGPT_2.2.1';
+// Zapnij Pasy vGPT_2.2.2
+import { Flap } from './flap.js?v=vGPT_2.2.2';
+import { Clock } from './clock.js?v=vGPT_2.2.2';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.2.2';
+import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.2.2';
+import { DisplayController } from './display-controller.js?v=vGPT_2.2.2';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.2.2';
+import { startUpdates } from './updates.js?v=vGPT_2.2.2';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -52,7 +52,7 @@ function fitViewport() {
 }
 function image(name, alt = '') {
   const element = document.createElement('img');
-  element.src = './assets/signs/'+name+'.png';
+  element.src = './Grafiki/signs/'+name+'.png';
   element.alt = alt;
   element.width = element.height = 512;
   return element;
@@ -150,7 +150,7 @@ Promise.all(requiredAssets.map(name=>new Promise((resolve,reject)=>{
   const asset = new Image();
   asset.onload = resolve;
   asset.onerror = ()=>reject(new Error('Sign image unavailable: '+name));
-  asset.src = './assets/signs/'+name+'.png';
+  asset.src = './Grafiki/signs/'+name+'.png';
 }))).then(async()=>{
   let saved = {};
   try { saved = JSON.parse(sessionStorage.getItem(UPDATE_STATE)||'{}'); sessionStorage.removeItem(UPDATE_STATE); } catch { /* Start safely if storage is unavailable. */ }
@@ -170,7 +170,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.2.1'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.2.2'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();
