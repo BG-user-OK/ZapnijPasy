@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.2.0 — explicit display sequence; all durations use timestamp deadlines.
+// Zapnij Pasy vGPT_2.2.1 — explicit display sequence; all durations use timestamp deadlines.
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id) }) {
     this.effects = effects;

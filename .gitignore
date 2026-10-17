@@ -5,3 +5,8 @@
 /.private/
 /PROCEDURA_DZIALANIA.txt
 /assets-source/
+
+# APKs and Android release bundles must never be published
+*.[aA][pP][kK]
+*.[aA][aA][bB]
+/downloads/
