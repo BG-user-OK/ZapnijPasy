@@ -1,8 +1,8 @@
-# Zapnij Pasy — vGPT_2.2.2
+# Zapnij Pasy — vGPT_2.4.0
 
 A two-module mechanical H/HH + MM clock PWA for iPhone 7 / iOS 15 in landscape. Hours 0–23 and two-digit minutes each occupy one complete split-flap assembly with two hinge clips. Hours have no leading zero and remain centered. A single square beside the hour replaces the colon. Only changed complete modules flip. Time always comes from the device.
 
-The invisible left hours module controls the passenger procedure. A tap interrupts the normal cycle and shows seat-belt signs on both halves. The person sign holds for two seconds, two mechanical flaps reveal the buckle sign, both tongues insert simultaneously into stationary buckles, and the completed fastening holds for two seconds. This repeats until another deliberate tap. Confirmation freezes the sign for ten seconds and restores the actual clock.
+The invisible left hours module controls the passenger procedure. A tap interrupts the normal cycle and shows seat-belt signs on both halves. The person sign holds for two seconds, two mechanical flaps reveal the buckle sign, both tongues insert simultaneously into stationary buckles, and the completed fastening holds for two seconds. This repeats until another deliberate tap. Confirmation draws simultaneous green marker checks, holds three seconds, shows one centered golden thumbs-up with three full expansions, holds four seconds, fades and immediately restores the actual clock through mechanical flaps.
 
 The normal cycle starts on launch and after confirmation: wait for the next visible minute boundary, finish the changed digit flips, wait ten seconds, then show No Smoking + No Eating for sixty seconds after the graphic transition. Restore the clock and repeat with Camera + Piggy Bank. The pairs alternate; a passenger session always resets the next pair to the first.
 
@@ -22,7 +22,7 @@ Hold the hours module for approximately three seconds to open pairing. Ordinary 
 
 The acceptance controller is [pilot-proof.html](./pilot-proof.html). It explicitly separates a requested command, a committed database write and an acknowledgment from the display after the actual state transition. This remains a temporary phone test page. The native Android companion APK is distributed only from the owner’s local project directory. [The installation guide](./pilot-install.html) explains manual transfer; it provides no APK download.
 
-The paired display uses Firebase Spark Authentication and one Realtime Database in Belgium. Only the two paired identities can use the pair. Commands expire within fifteen seconds, are claimed from the server before execution and never enter an offline send queue. Reconnection rotates the display generation. Duplicate START does not restart an active passenger loop; duplicate confirmation does not extend the ten-second delay.
+The paired display uses Firebase Spark Authentication and one Realtime Database in Belgium. Only the two paired identities can use the pair. Commands expire within fifteen seconds, are claimed from the server before execution and never enter an offline send queue. Reconnection rotates the display generation. Duplicate START does not restart an active passenger loop; duplicate confirmation does not restart or extend the celebration.
 
 Local short taps on the hours module use the same session/revision and take priority over a conflicting remote transition. The core clock and local passenger cycle remain available without Firebase or internet. The connection is paused while the display is hidden; delivery while the iPhone is suspended is not guaranteed.
 
@@ -31,3 +31,5 @@ Stage 1 phone communication was accepted by the user on 2026-10-16. The Kotlin c
 The time flaps use one rigid double-sided leaf over 800 ms. Whole-view transitions take 820 ms; the 2/10/60-second procedure and 800 ms buckle insertion remain unchanged. Native Android APK vGPT_2.1.0 needs no update or re-pairing for this appearance release. Physical iPhone 7 visual/daylight testing remains required.
 
 All active display graphics and installation icons are organized under Grafiki/. Non-piggy sign rings share a thinner consistent width; both prohibition slashes match. The piggy image and buckle mechanism retain their approved appearance.
+
+PWA vGPT_2.4.0: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.

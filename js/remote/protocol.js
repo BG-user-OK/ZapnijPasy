@@ -1,6 +1,7 @@
-// Zapnij Pasy vGPT_2.2.2 — Stage 1 development work.
+// Zapnij Pasy vGPT_2.4.0 — Stage 1 development work.
 // Stage 1: transport-independent, durable and idempotent passenger commands.
 // Local time display is deliberately outside this module.
+import {CONFIRMATION_DURATION} from '../confirmation-animation.js';
 const TYPES = new Set(['START_PASSENGER','CONFIRM_BELTS']);
 const ID = /^[A-Za-z0-9_-]{22}$/;
 export const COMMAND_TTL_MS = 15000;
@@ -100,5 +101,5 @@ export class PassengerProtocol {
     const next={...copy(this.state),mode:'CLOCK',sessionId:'',confirmedAt:0,revision:this.state.revision+1};
     this.persist(next);return this.snapshot();
   }
-  confirmationDeadline() {return this.state.mode==='PASSENGER_CONFIRMED_WAIT'?this.state.confirmedAt+10000:null;}
+  confirmationDeadline() {return this.state.mode==='PASSENGER_CONFIRMED_WAIT'?this.state.confirmedAt+CONFIRMATION_DURATION:null;}
 }

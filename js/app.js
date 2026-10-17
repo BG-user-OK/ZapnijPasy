@@ -1,11 +1,12 @@
-// Zapnij Pasy vGPT_2.2.2
-import { Flap } from './flap.js?v=vGPT_2.2.2';
-import { Clock } from './clock.js?v=vGPT_2.2.2';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.2.2';
-import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.2.2';
-import { DisplayController } from './display-controller.js?v=vGPT_2.2.2';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.2.2';
-import { startUpdates } from './updates.js?v=vGPT_2.2.2';
+// Zapnij Pasy vGPT_2.4.0
+import { Flap } from './flap.js?v=vGPT_2.4.0';
+import { Clock } from './clock.js?v=vGPT_2.4.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.4.0';
+import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.4.0';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.4.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.4.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.4.0';
+import { startUpdates } from './updates.js?v=vGPT_2.4.0';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -58,6 +59,7 @@ function image(name, alt = '') {
   return element;
 }
 function renderGraphic(view) {
+  confirmation.cancel();
   buckle.stop(false);
   signs.replaceChildren();
   if (view === 'belt-two') {
@@ -87,6 +89,7 @@ const clock = new Clock({update(time,{animate}) {
   controller?.onClockMinute(time,{natural:animate,completed:Promise.all(modules.map(module=>module.whenFinished()))});
 }});
 function settleClock() { clock.stop(); modules.forEach(module=>module.finish()); }
+const confirmation = new ConfirmationAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 const buckle = new SeatBeltAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 transition = new ViewTransition(stage,{clock:root,signs},{
   beforeChange:settleClock,
@@ -98,6 +101,7 @@ transition = new ViewTransition(stage,{clock:root,signs},{
 function cancelVisuals(completeInsertion=false) {
   interrupting = true;
   transition.finish();
+  confirmation.cancel();
   buckle.stop(completeInsertion && currentView==='belt-two');
   settleClock();
   interrupting = false;
@@ -111,8 +115,10 @@ controller = new DisplayController({effects:{
     const accepted = transition.show(target,{animate,force:changed,prepare:()=>{if(target==='signs')renderGraphic(view);}});
     if(!accepted && target==='clock' && !document.hidden && !suspended) clock.start();
     await transition.whenFinished();
+    if(view==='clock' && currentView==='clock')confirmation.cancel();
   },
   insert:()=>buckle.play(),
+  confirmation:(name,options)=>confirmation.play(name,options),
   freeze:()=>cancelVisuals(true),
   cancel:()=>cancelVisuals(false),
   idle:()=>{remote?.clockRestored();checkForUpdates();}
@@ -145,12 +151,12 @@ document.addEventListener('visibilitychange',()=>document.hidden ? suspend() : r
 reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches){modules.forEach(module=>module.finish());transition.finish();if(signs.classList.contains('is-inserting'))buckle.stop(true);}});
 fitViewport();
 clock.start();
-const requiredAssets = ['seat-belt','no-food-drink','no-smoking-vaping','cctv','tip','buckle-base','buckle-tongue'];
+const requiredAssets = ['thumbs-up.svg','seat-belt','no-food-drink','no-smoking-vaping','cctv','tip','buckle-base','buckle-tongue'];
 Promise.all(requiredAssets.map(name=>new Promise((resolve,reject)=>{
   const asset = new Image();
   asset.onload = resolve;
   asset.onerror = ()=>reject(new Error('Sign image unavailable: '+name));
-  asset.src = './Grafiki/signs/'+name+'.png';
+  asset.src = './Grafiki/signs/'+name+(name.includes('.')?'':'.png');
 }))).then(async()=>{
   let saved = {};
   try { saved = JSON.parse(sessionStorage.getItem(UPDATE_STATE)||'{}'); sessionStorage.removeItem(UPDATE_STATE); } catch { /* Start safely if storage is unavailable. */ }
@@ -170,7 +176,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.2.2'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.4.0'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

@@ -1,12 +1,12 @@
-// Zapnij Pasy vGPT_2.2.2
-const VERSION = 'vGPT_2.2.2';
+// Zapnij Pasy vGPT_2.4.0
+const VERSION = 'vGPT_2.4.0';
 const PREFIX = 'zapnij-pasy-';
 const CACHE = PREFIX + VERSION;
 const BASE = '/ZapnijPasy/';
-const SHELL = ['./js/hold-control.js?v=vGPT_2.2.2','./js/remote/display.bundle.js?v=vGPT_2.2.2','./js/remote/transport.bundle.js?v=vGPT_2.2.2','./firebase-config.json','./pilot-proof.html','./pilot-proof.js?v=vGPT_2.2.2','./index.html','./styles.css?v=vGPT_2.2.2','./js/app.js?v=vGPT_2.2.2','./js/clock.js?v=vGPT_2.2.2','./js/flap.js?v=vGPT_2.2.2','./js/updates.js?v=vGPT_2.2.2','./js/view-transition.js?v=vGPT_2.2.2','./js/display-controller.js?v=vGPT_2.2.2','./js/seat-belt-animation.js?v=vGPT_2.2.2','./Grafiki/signs/buckle-base.png','./Grafiki/signs/buckle-tongue.png','./Grafiki/signs/seat-belt.png','./Grafiki/signs/no-food-drink.png','./Grafiki/signs/no-smoking-vaping.png','./Grafiki/signs/cctv.png','./Grafiki/signs/tip.png','./manifest.webmanifest','./Grafiki/icons/apple-touch-icon.png','./Grafiki/icons/icon-192.png','./Grafiki/icons/icon-512.png','./Grafiki/icons/maskable-512.png'];
+const SHELL = ['./js/confirmation-animation.js?v=vGPT_2.4.0','./Grafiki/signs/thumbs-up.svg','./js/hold-control.js?v=vGPT_2.4.0','./js/remote/display.bundle.js?v=vGPT_2.4.0','./js/remote/transport.bundle.js?v=vGPT_2.4.0','./firebase-config.json','./pilot-proof.html','./pilot-proof.js?v=vGPT_2.4.0','./index.html','./styles.css?v=vGPT_2.4.0','./js/app.js?v=vGPT_2.4.0','./js/clock.js?v=vGPT_2.4.0','./js/flap.js?v=vGPT_2.4.0','./js/updates.js?v=vGPT_2.4.0','./js/view-transition.js?v=vGPT_2.4.0','./js/display-controller.js?v=vGPT_2.4.0','./js/seat-belt-animation.js?v=vGPT_2.4.0','./Grafiki/signs/buckle-base.png','./Grafiki/signs/buckle-tongue.png','./Grafiki/signs/seat-belt.png','./Grafiki/signs/no-food-drink.png','./Grafiki/signs/no-smoking-vaping.png','./Grafiki/signs/cctv.png','./Grafiki/signs/tip.png','./manifest.webmanifest','./Grafiki/icons/apple-touch-icon.png','./Grafiki/icons/icon-192.png','./Grafiki/icons/icon-512.png','./Grafiki/icons/maskable-512.png'];
 const URLS = new Set(SHELL.map(path => new URL(path, self.location).href));
 // Keep older already-open views working until their cached release can be safely retired.
-const LEGACY_GRAPHICS = new Set(SHELL.filter(path => path.startsWith('./Grafiki/')).map(path => new URL(path.replace('./Grafiki/signs/','./assets/signs/').replace('./Grafiki/icons/','./icons/'), self.location).href));
+const LEGACY_GRAPHICS = new Set(SHELL.filter(path => path.startsWith('./Grafiki/') && path.endsWith('.png')).map(path => new URL(path.replace('./Grafiki/signs/','./assets/signs/').replace('./Grafiki/icons/','./icons/'), self.location).href));
 const readyClients = new Set();
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL.map(path => new Request(new URL(path,self.location).href,{cache:'reload'})))).then(() => self.skipWaiting()));

@@ -1,4 +1,5 @@
-// Zapnij Pasy vGPT_2.2.2 — explicit display sequence; all durations use timestamp deadlines.
+// Zapnij Pasy vGPT_2.4.0 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.4.0';
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id) }) {
     this.effects = effects;
@@ -93,10 +94,29 @@ export class DisplayController {
     this.state.phase = 'fastened-hold';
     this.waitUntil(this.now()+2000, () => this.passengerOne(), token);
   }
-  confirmPassenger({deadline = this.now()+10000} = {}) {
-    const token = this.enter({kind:'PASSENGER_CONFIRMED_WAIT', phase:'hold'});
+  confirmPassenger({startedAt=this.now(),recover=false} = {}) {
+    if(this.state.kind==='PASSENGER_CONFIRMED_WAIT')return;
+    const token=this.enter({kind:'PASSENGER_CONFIRMED_WAIT',confirmedAt:startedAt});
     this.effects.freeze();
-    this.waitUntil(deadline, () => this.restoreClock(), token);
+    let index=0,phaseStartedAt=startedAt;
+    if(recover) {
+      while(index<CONFIRMATION_STEPS.length && phaseStartedAt+CONFIRMATION_STEPS[index].duration<=this.now())phaseStartedAt+=CONFIRMATION_STEPS[index++].duration;
+      if(index===CONFIRMATION_STEPS.length){this.restoreClock(false);return;}
+    }
+    // Initialization is synchronous: remote ACK confirms this applied state, not the entire celebration.
+    this.confirmationStep(index,token,phaseStartedAt);
+  }
+  confirmationStep(index,token,phaseStartedAt=this.now()) {
+    if(!this.valid(token))return;
+    if(index>=CONFIRMATION_STEPS.length)return this.restoreClock();
+    const step=CONFIRMATION_STEPS[index];
+    Object.assign(this.state,{phase:step.name,stepIndex:index,phaseStartedAt,deadline:phaseStartedAt+step.duration});
+    const completed=this.effects.confirmation(step.name,{elapsed:Math.max(0,this.now()-phaseStartedAt),duration:step.duration});
+    if(!step.animation) {
+      this.waitUntil(phaseStartedAt+step.duration,()=>this.confirmationStep(index+1,token),token);
+    } else {
+      return Promise.resolve(completed).then(()=>{if(this.valid(token))return this.confirmationStep(index+1,token);});
+    }
   }
   suspend() {
     if (this.suspended) return;
@@ -110,11 +130,12 @@ export class DisplayController {
     const saved = {...this.state};
     if (saved.kind === 'PASSENGER') return this.startPassenger({animate:false});
     if (saved.kind === 'PASSENGER_CONFIRMED_WAIT') {
-      if (saved.deadline <= this.now()) return this.restoreClock(false);
-      const token = this.enter(saved);
+      let index=saved.stepIndex,phaseStartedAt=saved.phaseStartedAt;
+      while(index<CONFIRMATION_STEPS.length && phaseStartedAt+CONFIRMATION_STEPS[index].duration<=this.now())phaseStartedAt+=CONFIRMATION_STEPS[index++].duration;
+      if(index===CONFIRMATION_STEPS.length)return this.restoreClock(false);
+      const token=this.enter(saved);
       this.effects.freeze();
-      this.waitUntil(saved.deadline, () => this.restoreClock(), token);
-      return;
+      return this.confirmationStep(index,token,phaseStartedAt);
     }
     if (saved.kind === 'GRAPHIC_PAIR_VISIBLE' && saved.phase === 'hold' && saved.deadline > this.now()) {
       const token = this.enter(saved);

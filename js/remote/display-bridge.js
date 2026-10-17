@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.2.2 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.4.0 — optional display-side communication; the clock starts independently.
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';
 import {DisplayReceiver} from './display-receiver.js';
@@ -18,7 +18,7 @@ export class RemoteDisplay {
   adoptLocal() {
     const s=this.protocol.snapshot(),kind=this.controller.state.kind;
     if(kind==='PASSENGER')this.protocol.persist({...s,mode:'PASSENGER',sessionId:this.protocol.newId(),confirmedAt:0,revision:s.revision+1});
-    else if(kind==='PASSENGER_CONFIRMED_WAIT')this.protocol.persist({...s,mode:kind,sessionId:s.sessionId||this.protocol.newId(),confirmedAt:this.controller.state.deadline-10000,revision:s.revision+1});
+    else if(kind==='PASSENGER_CONFIRMED_WAIT')this.protocol.persist({...s,mode:kind,sessionId:s.sessionId||this.protocol.newId(),confirmedAt:this.controller.state.confirmedAt,revision:s.revision+1});
     else this.protocol.restoreClock();
   }
   message(text){this.status=text;if(this.statusElement)this.statusElement.textContent=text;}
@@ -54,14 +54,17 @@ export class RemoteDisplay {
     if(state.mode==='PASSENGER') {
       if(this.controller.state.kind!=='PASSENGER')await this.controller.startPassenger({animate:false});
     } else if(state.mode==='PASSENGER_CONFIRMED_WAIT') {
-      const remaining=state.confirmedAt+10000-(this.link?.now()||Date.now());
-      if(remaining<=0){this.protocol.restoreClock();await this.controller.restoreClock(false);}
-      else if(this.controller.state.kind!=='PASSENGER_CONFIRMED_WAIT') {
+      // A running controller owns its completion-based phase deadlines; reconnection cannot shorten them.
+      if(this.controller.state.kind==='PASSENGER_CONFIRMED_WAIT')return;
+      const now=this.link?.now()||Date.now();
+      if(this.protocol.confirmationDeadline()<=now){this.protocol.restoreClock();await this.controller.restoreClock(false);}
+      else {
         if(this.controller.state.kind!=='PASSENGER')await this.controller.startPassenger({animate:false});
-        this.controller.confirmPassenger({deadline:Date.now()+Math.max(0,state.confirmedAt+10000-(this.link?.now()||Date.now()))});
+        this.controller.confirmPassenger({startedAt:Date.now()-Math.max(0,now-state.confirmedAt),recover:true});
       }
     }
   }
+
   async ensureLink() {
     if(this.link?.auth.currentUser)return this.link;
     if(this.connecting)return this.connecting;
@@ -92,7 +95,7 @@ export class RemoteDisplay {
       if(this.hidden)return;
       const receiver=new DisplayReceiver({link:this.link,pairId:this.pair.pairId,protocol:this.protocol,apply:async(effect,state)=>{
         if(effect==='START_PASSENGER')await this.controller.startPassenger();
-        else this.controller.confirmPassenger({deadline:Date.now()+Math.max(0,state.confirmedAt+10000-this.link.now())});
+        else this.controller.confirmPassenger({startedAt:Date.now()});
       }});
       this.receiver=receiver;
       const generation=await this.link.armPresence(this.pair.pairId,receiver.view());
