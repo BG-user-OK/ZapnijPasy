@@ -1,12 +1,12 @@
-// Zapnij Pasy vGPT_2.4.1
-import { Flap } from './flap.js?v=vGPT_2.4.1';
-import { Clock } from './clock.js?v=vGPT_2.4.1';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.4.1';
-import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.4.1';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.4.1';
-import { DisplayController } from './display-controller.js?v=vGPT_2.4.1';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.4.1';
-import { startUpdates } from './updates.js?v=vGPT_2.4.1';
+// Zapnij Pasy vGPT_2.4.2
+import { Flap } from './flap.js?v=vGPT_2.4.2';
+import { Clock } from './clock.js?v=vGPT_2.4.2';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.4.2';
+import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.4.2';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.4.2';
+import { DisplayController } from './display-controller.js?v=vGPT_2.4.2';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.4.2';
+import { startUpdates } from './updates.js?v=vGPT_2.4.2';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -16,7 +16,6 @@ const modules = Array.from(root.querySelectorAll('.digit'), element => new Flap(
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const UPDATE_STATE = 'zapnij-pasy-update-sequence-v1';
 const graphics = {
-  'belt-one':[['seat-belt','Zapnij pasy'],['seat-belt','Zapnij pasy']],
   rules:[['no-smoking-vaping','Zakaz palenia'],['no-food-drink','Zakaz jedzenia i picia']],
   extras:[['cctv','Monitoring'],['tip','Skarbonka na napiwki']]
 };
@@ -62,21 +61,20 @@ function renderGraphic(view) {
   confirmation.cancel();
   buckle.stop(false);
   signs.replaceChildren();
-  if (view === 'belt-two') {
-    for (let index=0;index<2;index++) {
-      const graphic = document.createElement('div');
-      graphic.className = 'buckle';
-      graphic.setAttribute('role','img');
-      graphic.setAttribute('aria-label','Zapnij pasy — klamra');
-      for (const [part,asset] of [['base','base'],['tail','tongue'],['tongue','tongue'],['front','base']]) {
-        const layer = image('buckle-'+asset);
-        layer.className = 'buckle-'+part;
-        layer.setAttribute('aria-hidden','true');
-        graphic.append(layer);
-      }
-      signs.append(graphic);
+  if (view === 'belts') {
+    signs.append(image('seat-belt','Zapnij pasy'));
+    const graphic = document.createElement('div');
+    graphic.className = 'buckle';
+    graphic.setAttribute('role','img');
+    graphic.setAttribute('aria-label','Zapnij pasy — klamra');
+    for (const [part,asset] of [['base','base'],['tail','tongue'],['tongue','tongue'],['front','base']]) {
+      const layer = image('buckle-'+asset);
+      layer.className = 'buckle-'+part;
+      layer.setAttribute('aria-hidden','true');
+      graphic.append(layer);
     }
-    signs.setAttribute('aria-label','Zapnij pasy — zapinanie klamry');
+    signs.append(graphic);
+    signs.setAttribute('aria-label','Zapnij pasy — osoba po lewej, zapinanie klamry po prawej');
   } else {
     for (const [asset,alt] of graphics[view]) signs.append(image(asset,alt));
     signs.setAttribute('aria-label',graphics[view].map(item=>item[1]).join('. '));
@@ -102,7 +100,7 @@ function cancelVisuals(completeInsertion=false) {
   interrupting = true;
   transition.finish();
   confirmation.cancel();
-  buckle.stop(completeInsertion && currentView==='belt-two');
+  buckle.stop(completeInsertion && currentView==='belts');
   settleClock();
   interrupting = false;
 }
@@ -118,6 +116,7 @@ controller = new DisplayController({effects:{
     if(view==='clock' && currentView==='clock')confirmation.cancel();
   },
   insert:()=>buckle.play(),
+  resetInsertion:()=>buckle.stop(false),
   confirmation:(name,options)=>confirmation.play(name,options),
   freeze:()=>cancelVisuals(true),
   cancel:()=>cancelVisuals(false),
@@ -176,7 +175,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.4.1'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.4.2'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

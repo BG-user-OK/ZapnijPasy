@@ -1,8 +1,8 @@
-# Zapnij Pasy — vGPT_2.4.1
+# Zapnij Pasy — vGPT_2.4.2
 
 A two-module mechanical H/HH + MM clock PWA for iPhone 7 / iOS 15 in landscape. Hours 0–23 and two-digit minutes each occupy one complete split-flap assembly with two hinge clips. Hours have no leading zero and remain centered. A single square beside the hour replaces the colon. Only changed complete modules flip. Time always comes from the device.
 
-The invisible left hours module controls the passenger procedure. A tap interrupts the normal cycle and shows seat-belt signs on both halves. The person sign holds for two seconds, two mechanical flaps reveal the buckle sign, both tongues insert simultaneously into stationary buckles, and the completed fastening holds for two seconds. This repeats until another deliberate tap. Confirmation draws simultaneous green marker checks, holds three seconds, shows one centered golden thumbs-up with three full expansions, holds four seconds, fades and immediately restores the actual clock through mechanical flaps.
+The invisible left hours module starts a fixed passenger display: seated-person sign on the left, animated fastening buckle on the right. After the initial mechanical entrance, keep both graphics in place. Only the right tongue repeats its two-second open hold, 800 ms insertion and two-second closed hold. Confirmation stops this loop and retains the existing green checks, transparent thumbs-up celebration and mechanical clock return.
 
 The normal cycle starts on launch and after confirmation: wait for the next visible minute boundary, finish the changed digit flips, wait ten seconds, then show No Smoking + No Eating for sixty seconds after the graphic transition. Restore the clock and repeat with Camera + Piggy Bank. The pairs alternate; a passenger session always resets the next pair to the first.
 
@@ -32,6 +32,8 @@ The time flaps use one rigid double-sided leaf over 800 ms. Whole-view transitio
 
 All active display graphics and installation icons are organized under Grafiki/. Non-piggy sign rings share a thinner consistent width; both prohibition slashes match. The piggy image and buckle mechanism retain their approved appearance.
 
-PWA vGPT_2.4.1: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
+PWA vGPT_2.4.2: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
 
-Visual correction vGPT_2.4.1: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
+Visual correction vGPT_2.4.2: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
+
+PWA vGPT_2.4.2: fixed left-person/right-buckle passenger layout; no alternating belt screens. Only the right tongue repeats. Confirmation, clock/message cycle, assets and pilot vGPT_2.3.0 remain unchanged.
