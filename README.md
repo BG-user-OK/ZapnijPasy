@@ -1,4 +1,4 @@
-# Zapnij Pasy — vGPT_2.4.0
+# Zapnij Pasy — vGPT_2.4.1
 
 A two-module mechanical H/HH + MM clock PWA for iPhone 7 / iOS 15 in landscape. Hours 0–23 and two-digit minutes each occupy one complete split-flap assembly with two hinge clips. Hours have no leading zero and remain centered. A single square beside the hour replaces the colon. Only changed complete modules flip. Time always comes from the device.
 
@@ -32,4 +32,6 @@ The time flaps use one rigid double-sided leaf over 800 ms. Whole-view transitio
 
 All active display graphics and installation icons are organized under Grafiki/. Non-piggy sign rings share a thinner consistent width; both prohibition slashes match. The piggy image and buckle mechanism retain their approved appearance.
 
-PWA vGPT_2.4.0: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
+PWA vGPT_2.4.1: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
+
+Visual correction vGPT_2.4.1: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
