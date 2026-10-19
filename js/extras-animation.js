@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.5.0 — one cancellable camera/rolling-piggy timeline.
+// Zapnij Pasy vGPT_2.5.1 — one cancellable camera/rolling-piggy timeline.
 export const EXTRAS_DURATION=60000;
 export const EXTRAS_STEPS=Object.freeze([
  {name:'camera-enter',start:0,end:4000},{name:'camera-visible',start:4000,end:34000},
@@ -47,10 +47,20 @@ export class ExtrasAnimation {
  play({elapsed=0}={}) {
   this.cancel();elapsed=Math.max(0,Math.min(EXTRAS_DURATION,elapsed));this.startedAt=this.now()-elapsed;
   this.apply(elapsed);
-  if(elapsed>=EXTRAS_DURATION)return Promise.resolve(true);
+  if(elapsed>=EXTRAS_DURATION){this.finish(true);return Promise.resolve(true);}
   return new Promise(resolve=>{this.pending={resolve,timer:this.schedule(()=>this.finish(true),EXTRAS_DURATION-elapsed+150)};});
  }
- finish(completed){const pending=this.pending;this.pending=null;if(pending){this.cancelTimer(pending.timer);pending.resolve(completed);}}
+ finish(completed){
+  if(completed){
+   const scene=this.host.querySelector('.extras-scene');
+   if(scene){
+    // Snapshot clones must retain the final black frame, never restart CSS travel.
+    for(const actor of scene.querySelectorAll('.extras-camera,.extras-piggy,.extras-piggy img'))actor.style.opacity='0';
+    scene.classList.remove('is-extras-running');
+   }
+  }
+  const pending=this.pending;this.pending=null;if(pending){this.cancelTimer(pending.timer);pending.resolve(completed);}
+ }
  cancel(){
   const scene=this.host.querySelector('.extras-scene');
   if(scene){
