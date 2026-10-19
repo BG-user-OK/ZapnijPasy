@@ -1,4 +1,15 @@
-// Zapnij Pasy vGPT_2.5.1 — one shared CSS animation start; completes when all actual tongues finish.
+// Zapnij Pasy vGPT_2.6.0 — one shared CSS animation start; completes when all actual tongues finish.
+// The original bitmap remains untouched beneath the two aligned belt strokes.
+export function createSeatBeltSign(image) {
+  const sign=document.createElement('div');sign.className='seat-belt-person';
+  const overlay=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  overlay.setAttribute('class','seat-belt-reminder');overlay.setAttribute('viewBox','0 0 512 512');
+  overlay.setAttribute('aria-hidden','true');overlay.setAttribute('focusable','false');
+  for(const d of ['M 342 137 L 287 191 L 184 294 Q 165 321 136 337','M 187 311 C 222 299 272 297 313 311']) {
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',d);overlay.append(path);
+  }
+  sign.append(image,overlay);return sign;
+}
 export class SeatBeltAnimation {
   constructor(host, { reducedMotion = () => false, duration = 800, schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id) } = {}) {
     this.host = host;
@@ -17,6 +28,8 @@ export class SeatBeltAnimation {
       if (this.finished.size === this.tongues.size) this.stop(true);
     });
   }
+  startReminder() { this.host.classList.add('is-belt-reminding'); }
+  stopReminder() { this.host.classList.remove('is-belt-reminding'); }
   play() {
     this.stop(false);
     if (this.reducedMotion()) { this.host.classList.add('is-fastened'); return Promise.resolve(); }

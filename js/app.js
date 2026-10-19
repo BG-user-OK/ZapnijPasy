@@ -1,13 +1,13 @@
-// Zapnij Pasy vGPT_2.5.1
-import { Flap } from './flap.js?v=vGPT_2.5.1';
-import { Clock } from './clock.js?v=vGPT_2.5.1';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.5.1';
-import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.5.1';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.5.1';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.5.1';
-import { DisplayController } from './display-controller.js?v=vGPT_2.5.1';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.5.1';
-import { startUpdates } from './updates.js?v=vGPT_2.5.1';
+// Zapnij Pasy vGPT_2.6.0
+import { Flap } from './flap.js?v=vGPT_2.6.0';
+import { Clock } from './clock.js?v=vGPT_2.6.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.6.0';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.6.0';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.6.0';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.6.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.6.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.6.0';
+import { startUpdates } from './updates.js?v=vGPT_2.6.0';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -62,12 +62,13 @@ function renderGraphic(view) {
   confirmation.cancel();
   extras.cancel();
   buckle.stop(false);
+  buckle.stopReminder();
   signs.replaceChildren();
   if(view==='extras'){
     extras.prepare();extras.resize();
     signs.setAttribute('aria-label','Monitoring, następnie skarbonka na napiwki');
   } else if (view === 'belts') {
-    signs.append(image('seat-belt','Zapnij pasy'));
+    signs.append(createSeatBeltSign(image('seat-belt','Zapnij pasy')));
     const graphic = document.createElement('div');
     graphic.className = 'buckle';
     graphic.setAttribute('role','img');
@@ -107,6 +108,7 @@ function cancelVisuals(completeInsertion=false) {
   transition.finish();
   extras.cancel();
   confirmation.cancel();
+  buckle.stopReminder();
   buckle.stop(completeInsertion && currentView==='belts');
   settleClock();
   interrupting = false;
@@ -124,7 +126,7 @@ controller = new DisplayController({effects:{
   },
   extras:options=>extras.play(options),
   insert:()=>buckle.play(),
-  resetInsertion:()=>buckle.stop(false),
+  resetInsertion:()=>{buckle.stop(false);buckle.startReminder();},
   confirmation:(name,options)=>confirmation.play(name,options),
   freeze:()=>cancelVisuals(true),
   cancel:()=>cancelVisuals(false),
@@ -183,7 +185,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.5.1'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.6.0'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();
