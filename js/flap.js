@@ -1,13 +1,16 @@
-// Zapnij Pasy vGPT_2.6.1 — one rigid, double-sided leaf for each complete value.
+// Zapnij Pasy vGPT_2.7.0 — one rigid, double-sided leaf for each complete value.
+export const FLAP_SETTLE_DURATION=520;
 export class Flap {
   constructor(element, { render = (host, value) => {
     const text = document.createElement('span');
     text.textContent = String(value);
     host.replaceChildren(text);
-  }, duration = 800 } = {}) {
+  }, duration = 800, settleDuration = FLAP_SETTLE_DURATION } = {}) {
     this.element = element;
     this.render = render;
     this.duration = duration;
+    this.settleDuration = settleDuration;
+    this.phase = null;
     this.value = undefined;
     this.pending = undefined;
     this.timer = null;
@@ -32,14 +35,17 @@ export class Flap {
       element.append(detail);
     }
     element.style.setProperty('--flip-duration', duration + 'ms');
+    element.style.setProperty('--flap-settle-duration', settleDuration + 'ms');
     element.addEventListener('animationend', event => {
-      if (event.animationName === 'flap-fall' && event.target === this.leaf) this.finish();
+      if(event.target!==this.leaf)return;
+      if(event.animationName==='flap-fall'&&this.phase==='fall')this.settles?this.beginSettle():this.finish();
+      else if(event.animationName==='flap-settle'&&this.phase==='settling')this.finish();
     });
   }
   paint(name, value) { this.render(this.faces[name], value); }
-  setValue(value, { animate = true } = {}) {
+  setValue(value, { animate = true, settle = true, duration = this.duration, force = false } = {}) {
     if (this.pending !== undefined) this.finish();
-    if (Object.is(value, this.value)) return false;
+    if (Object.is(value, this.value) && !force) return false;
     if (!animate || this.value === undefined) {
       this.value = value;
       this.paint('upper', value);
@@ -47,13 +53,23 @@ export class Flap {
       return false;
     }
     this.pending = value;
+    this.settles = settle;
+    this.phase = 'fall';
+    this.element.style.setProperty('--flip-duration', duration + 'ms');
     this.paint('upper', value);
     this.paint('moving-upper', this.value);
     this.paint('moving-lower', value);
     void this.element.offsetHeight;
     this.element.classList.add('is-flipping');
-    this.timer = setTimeout(() => this.finish(), this.duration + 120);
+    this.timer = setTimeout(() => this.settles ? this.beginSettle() : this.finish(), duration + 120);
     return true;
+  }
+  beginSettle() {
+    if(this.phase!=='fall'||this.pending===undefined)return;
+    clearTimeout(this.timer);this.phase='settling';
+    this.paint('lower',this.pending); // The bouncing leaf must reveal the new lower half.
+    this.element.classList.add('is-settling');
+    this.timer=setTimeout(()=>this.finish(),this.settleDuration+120);
   }
   whenFinished() {
     if (this.pending === undefined) return Promise.resolve();
@@ -68,7 +84,8 @@ export class Flap {
       this.paint('upper', this.value);
       this.paint('lower', this.value);
     }
-    this.element.classList.remove('is-flipping');
+    this.phase=null;
+    this.element.classList.remove('is-flipping','is-settling');
     this.waiters.splice(0).forEach(resolve => resolve());
   }
 }

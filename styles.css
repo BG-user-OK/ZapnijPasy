@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.6.1 */
+/* Zapnij Pasy vGPT_2.7.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -204,3 +204,14 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .is-belt-reminding .seat-belt-reminder{animation:seat-belt-remind 2000ms steps(1,end) infinite}
 @keyframes seat-belt-remind{0%{opacity:1}50%,100%{opacity:0}}
 @media(prefers-reduced-motion:reduce){.is-belt-reminding .seat-belt-reminder{animation:none;opacity:1}}
+
+/* Damped movement belongs to the same rigid leaf, not to the digits or clock body. */
+.is-flipping.is-settling .falling-flap{animation:flap-settle var(--flap-settle-duration) ease-in-out both}
+.is-running.is-settling .transition-panel{animation:view-flap-settle var(--flap-settle-duration) ease-in-out both}
+@keyframes flap-settle{0%{transform:rotateX(-180deg)}20%{transform:rotateX(-162deg)}40%{transform:rotateX(-188deg)}65%{transform:rotateX(-175deg)}82%{transform:rotateX(-182deg)}100%{transform:rotateX(-180deg)}}
+@keyframes view-flap-settle{0%{transform:rotateX(-180deg)}20%{transform:rotateX(-162deg)}40%{transform:rotateX(-188deg)}65%{transform:rotateX(-175deg)}82%{transform:rotateX(-182deg)}100%{transform:rotateX(-180deg)}}
+.confirmation-blackout{position:absolute;inset:0;z-index:7;background:#000;opacity:0;pointer-events:none}
+[data-confirmation="scene-fade"] .confirmation-blackout{animation:confirmation-scene-fade var(--confirmation-duration) ease-in-out var(--confirmation-delay) both}
+[data-confirmation="black-hold"] .confirmation-blackout{opacity:1}
+@keyframes confirmation-scene-fade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.is-flipping.is-settling .falling-flap{animation:none}.confirmation-blackout{animation:none!important}[data-confirmation="scene-fade"] .confirmation-blackout{opacity:1}}

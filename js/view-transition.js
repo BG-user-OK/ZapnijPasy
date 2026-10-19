@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.6.1 — two physical flaps between complete views.
+// Zapnij Pasy vGPT_2.7.0 — two physical flaps between complete views.
 export class ViewTransition {
   constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 820 } = {}) {
     this.stage = stage;
@@ -9,6 +9,7 @@ export class ViewTransition {
     this.onFinish = onFinish;
     this.reducedMotion = reducedMotion;
     this.duration = duration;
+    this.phase = null;
     this.mode = 'clock';
     this.busy = false;
     this.timer = null;
@@ -17,9 +18,12 @@ export class ViewTransition {
     this.overlay.className = 'view-transition';
     this.overlay.setAttribute('aria-hidden', 'true');
     this.overlay.style.setProperty('--view-flip-duration', duration + 'ms');
+    this.overlay.style.setProperty('--flap-settle-duration','520ms');
     stage.append(this.overlay);
     this.overlay.addEventListener('animationend', event => {
-      if (event.animationName === 'view-flap-fall' && event.target === this.lastPanel) this.finish();
+      if(event.target!==this.lastPanel)return;
+      if(event.animationName==='view-flap-fall'&&this.phase==='fall')this.mode==='clock'?this.beginSettle():this.finish();
+      else if(event.animationName==='view-flap-settle'&&this.phase==='settling')this.finish();
     });
     this.applyMode();
   }
@@ -60,6 +64,7 @@ export class ViewTransition {
     lower.className = 'transition-bottom';
     lower.append(this.capture(outgoing, 0, height / 2, width, height));
     this.overlay.append(lower);
+    this.lower=lower;
     for (let index = 0; index < 2; index++) {
       const left = width * index / 2;
       const panel = document.createElement('div');
@@ -74,13 +79,22 @@ export class ViewTransition {
       this.overlay.append(panel);
       this.lastPanel = panel;
     }
+    this.phase='fall';
     this.overlay.classList.add('is-visible');
     void this.overlay.offsetHeight;
     this.overlay.classList.add('is-running');
-    this.timer = setTimeout(() => this.finish(), this.duration + 150);
+    this.timer = setTimeout(() => this.mode==='clock' ? this.beginSettle() : this.finish(), this.duration + 150);
     return true;
   }
 
+  beginSettle() {
+    if(!this.busy||this.phase!=='fall')return;
+    clearTimeout(this.timer);this.phase='settling';
+    const {width,height}=this.stage.getBoundingClientRect();
+    this.lower.replaceChildren();this.lower.append(this.capture(this.views[this.mode],0,height/2,width,height));
+    this.overlay.classList.add('is-settling');
+    this.timer=setTimeout(()=>this.finish(),640);
+  }
   whenFinished() {
     if (!this.busy) return Promise.resolve();
     return new Promise(resolve => this.waiters.push(resolve));
@@ -90,7 +104,8 @@ export class ViewTransition {
     if (!this.busy) return;
     clearTimeout(this.timer);
     this.timer = null;
-    this.overlay.classList.remove('is-running', 'is-visible');
+    this.phase=null;
+    this.overlay.classList.remove('is-running', 'is-visible','is-settling');
     this.overlay.replaceChildren();
     this.lastPanel = null;
     this.busy = false;
