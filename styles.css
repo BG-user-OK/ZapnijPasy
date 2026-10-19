@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.4.2 */
+/* Zapnij Pasy vGPT_2.5.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -164,3 +164,35 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 @media(prefers-reduced-motion:reduce){.confirmation-checks path,.confirmation-thumb,.confirmation-thumb img{animation:none!important}}
 
 [data-confirmation="complete"] .confirmation-thumb{opacity:0}
+
+/* Sequential extras: black scene, descending camera, then a wheel-like rolling piggy. */
+.extras-scene{position:absolute;inset:0;overflow:hidden;background:#000;pointer-events:none}
+.extras-camera,.extras-piggy{position:absolute;width:var(--extras-size);height:var(--extras-size);pointer-events:none}
+.extras-scene img{display:block;width:100%;height:100%;object-fit:contain}
+.extras-camera{left:50%;top:0;transform:translate3d(-50%,var(--extras-camera-start),0)}
+.extras-piggy{left:0;top:50%;transform:translate3d(var(--extras-piggy-start),-50%,0)}
+.extras-piggy img{transform:rotate(var(--extras-roll-start))}
+.is-extras-running .extras-camera{animation:extras-camera-travel 38000ms var(--extras-delay) both;will-change:transform}
+.is-extras-running .extras-piggy{animation:extras-piggy-travel 19000ms var(--piggy-delay) both;will-change:transform}
+.is-extras-running .extras-piggy img{animation:extras-piggy-roll 19000ms var(--piggy-delay) both;will-change:transform}
+@keyframes extras-camera-travel{
+ 0%{transform:translate3d(-50%,var(--extras-camera-start),0);animation-timing-function:ease-out}
+ 10.5263157895%{transform:translate3d(-50%,var(--extras-camera-top),0);animation-timing-function:linear}
+ 89.4736842105%{transform:translate3d(-50%,var(--extras-camera-bottom),0);animation-timing-function:ease-in}
+ 100%{transform:translate3d(-50%,var(--extras-camera-end),0)}
+}
+@keyframes extras-piggy-travel{
+ 0%{transform:translate3d(var(--extras-piggy-start),-50%,0);animation-timing-function:ease-out}
+ 21.0526315789%,78.9473684211%{transform:translate3d(var(--extras-center-x),-50%,0);animation-timing-function:ease-in}
+ 100%{transform:translate3d(var(--extras-piggy-end),-50%,0)}
+}
+@keyframes extras-piggy-roll{
+ 0%{transform:rotate(var(--extras-roll-start));animation-timing-function:ease-out}
+ 21.0526315789%,78.9473684211%{transform:rotate(0deg);animation-timing-function:ease-in}
+ 100%{transform:rotate(var(--extras-roll-end))}
+}
+.is-extras-reduced.is-extras-running .extras-camera{animation-name:extras-camera-reduced;will-change:auto}
+.is-extras-reduced.is-extras-running .extras-piggy{animation-name:extras-piggy-reduced;will-change:auto}
+.is-extras-reduced.is-extras-running .extras-piggy img{animation:none;transform:none;will-change:auto}
+@keyframes extras-camera-reduced{0%{opacity:0;transform:translate3d(-50%,var(--extras-center-y),0)}.001%,99.999%{opacity:1;transform:translate3d(-50%,var(--extras-center-y),0)}100%{opacity:0;transform:translate3d(-50%,var(--extras-center-y),0)}}
+@keyframes extras-piggy-reduced{0%{opacity:0;transform:translate3d(var(--extras-center-x),-50%,0)}.001%,99.999%{opacity:1;transform:translate3d(var(--extras-center-x),-50%,0)}100%{opacity:0;transform:translate3d(var(--extras-center-x),-50%,0)}}

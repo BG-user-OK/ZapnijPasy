@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.4.2 — one invisible control, two distinct gestures.
+// Zapnij Pasy vGPT_2.5.0 — one invisible control, two distinct gestures.
 export function bindHoldControl(element,{onTap,onHold,holdMs=3000,schedule=setTimeout,cancel=clearTimeout}) {
   let timer=null,origin=null,consume=false;
   const clear=()=>{if(timer!==null)cancel(timer);timer=null;};

@@ -1,12 +1,13 @@
-// Zapnij Pasy vGPT_2.4.2
-import { Flap } from './flap.js?v=vGPT_2.4.2';
-import { Clock } from './clock.js?v=vGPT_2.4.2';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.4.2';
-import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.4.2';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.4.2';
-import { DisplayController } from './display-controller.js?v=vGPT_2.4.2';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.4.2';
-import { startUpdates } from './updates.js?v=vGPT_2.4.2';
+// Zapnij Pasy vGPT_2.5.0
+import { Flap } from './flap.js?v=vGPT_2.5.0';
+import { Clock } from './clock.js?v=vGPT_2.5.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.5.0';
+import { SeatBeltAnimation } from './seat-belt-animation.js?v=vGPT_2.5.0';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.5.0';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.5.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.5.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.5.0';
+import { startUpdates } from './updates.js?v=vGPT_2.5.0';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -16,8 +17,7 @@ const modules = Array.from(root.querySelectorAll('.digit'), element => new Flap(
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const UPDATE_STATE = 'zapnij-pasy-update-sequence-v1';
 const graphics = {
-  rules:[['no-smoking-vaping','Zakaz palenia'],['no-food-drink','Zakaz jedzenia i picia']],
-  extras:[['cctv','Monitoring'],['tip','Skarbonka na napiwki']]
+  rules:[['no-smoking-vaping','Zakaz palenia'],['no-food-drink','Zakaz jedzenia i picia']]
 };
 let remote=null;
 let remoteLoading=null;
@@ -49,6 +49,7 @@ function fitViewport() {
   const first = modules[0].element.getBoundingClientRect();
   const bounds = stage.getBoundingClientRect();
   Object.assign(toggle.style,{left:first.left-bounds.left+'px',top:first.top-bounds.top+'px',width:first.width+'px',height:first.height+'px'});
+  extras.resize();
 }
 function image(name, alt = '') {
   const element = document.createElement('img');
@@ -59,9 +60,13 @@ function image(name, alt = '') {
 }
 function renderGraphic(view) {
   confirmation.cancel();
+  extras.cancel();
   buckle.stop(false);
   signs.replaceChildren();
-  if (view === 'belts') {
+  if(view==='extras'){
+    extras.prepare();extras.resize();
+    signs.setAttribute('aria-label','Monitoring, następnie skarbonka na napiwki');
+  } else if (view === 'belts') {
     signs.append(image('seat-belt','Zapnij pasy'));
     const graphic = document.createElement('div');
     graphic.className = 'buckle';
@@ -87,6 +92,7 @@ const clock = new Clock({update(time,{animate}) {
   controller?.onClockMinute(time,{natural:animate,completed:Promise.all(modules.map(module=>module.whenFinished()))});
 }});
 function settleClock() { clock.stop(); modules.forEach(module=>module.finish()); }
+const extras = new ExtrasAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 const confirmation = new ConfirmationAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 const buckle = new SeatBeltAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 transition = new ViewTransition(stage,{clock:root,signs},{
@@ -99,6 +105,7 @@ transition = new ViewTransition(stage,{clock:root,signs},{
 function cancelVisuals(completeInsertion=false) {
   interrupting = true;
   transition.finish();
+  extras.cancel();
   confirmation.cancel();
   buckle.stop(completeInsertion && currentView==='belts');
   settleClock();
@@ -115,6 +122,7 @@ controller = new DisplayController({effects:{
     await transition.whenFinished();
     if(view==='clock' && currentView==='clock')confirmation.cancel();
   },
+  extras:options=>extras.play(options),
   insert:()=>buckle.play(),
   resetInsertion:()=>buckle.stop(false),
   confirmation:(name,options)=>confirmation.play(name,options),
@@ -147,7 +155,7 @@ window.addEventListener('pageshow',resume);
 window.addEventListener('pagehide',suspend);
 window.addEventListener('focus',resume);
 document.addEventListener('visibilitychange',()=>document.hidden ? suspend() : resume());
-reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches){modules.forEach(module=>module.finish());transition.finish();if(signs.classList.contains('is-inserting'))buckle.stop(true);}});
+reducedMotion.addEventListener('change',()=>{extras.updateMotion();if(reducedMotion.matches){modules.forEach(module=>module.finish());transition.finish();if(signs.classList.contains('is-inserting'))buckle.stop(true);}});
 fitViewport();
 clock.start();
 const requiredAssets = ['thumbs-up.svg','seat-belt','no-food-drink','no-smoking-vaping','cctv','tip','buckle-base','buckle-tongue'];
@@ -175,7 +183,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.4.2'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.5.0'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

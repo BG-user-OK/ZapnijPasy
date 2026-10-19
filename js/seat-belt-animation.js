@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.4.2 — one shared CSS animation start; completes when all actual tongues finish.
+// Zapnij Pasy vGPT_2.5.0 — one shared CSS animation start; completes when all actual tongues finish.
 export class SeatBeltAnimation {
   constructor(host, { reducedMotion = () => false, duration = 800, schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id) } = {}) {
     this.host = host;
