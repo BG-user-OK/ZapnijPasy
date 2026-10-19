@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.7.1 — two physical flaps between complete views.
+// Zapnij Pasy vGPT_2.7.2 — two physical flaps between complete views.
 export class ViewTransition {
   constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 820 } = {}) {
     this.stage = stage;
@@ -54,6 +54,8 @@ export class ViewTransition {
     const outgoing = this.views[this.mode].cloneNode(true);
     prepare();
     this.beforeReveal(target);
+    this.stage.classList.remove('is-clock-settling','is-clock-return');
+    if(target==='clock')this.stage.classList.add('is-clock-return');
     this.mode = target;
     this.busy = true;
     this.applyMode();
@@ -90,6 +92,7 @@ export class ViewTransition {
   beginSettle() {
     if(!this.busy||this.phase!=='fall')return;
     clearTimeout(this.timer);this.phase='settling';
+    this.stage.classList.add('is-clock-settling');
     const {width,height}=this.stage.getBoundingClientRect();
     this.lower.replaceChildren();this.lower.append(this.capture(this.views[this.mode],0,height/2,width,height));
     this.overlay.classList.add('is-settling');
@@ -105,6 +108,7 @@ export class ViewTransition {
     clearTimeout(this.timer);
     this.timer = null;
     this.phase=null;
+    this.stage.classList.remove('is-clock-return','is-clock-settling');
     this.overlay.classList.remove('is-running', 'is-visible','is-settling');
     this.overlay.replaceChildren();
     this.lastPanel = null;
