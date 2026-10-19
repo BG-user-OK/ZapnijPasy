@@ -1,5 +1,5 @@
-// Zapnij Pasy vGPT_2.7.0 — one rigid, double-sided leaf for each complete value.
-export const FLAP_SETTLE_DURATION=520;
+// Zapnij Pasy vGPT_2.7.1 — one rigid, double-sided leaf for each complete value.
+export const FLAP_SETTLE_DURATION=1000;
 export class Flap {
   constructor(element, { render = (host, value) => {
     const text = document.createElement('span');

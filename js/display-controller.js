@@ -1,6 +1,6 @@
-// Zapnij Pasy vGPT_2.7.0 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.7.0';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.7.0';
+// Zapnij Pasy vGPT_2.7.1 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.7.1';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.7.1';
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id) }) {
     this.effects = effects;
@@ -98,14 +98,19 @@ export class DisplayController {
     if(!this.valid(token))return;
     this.effects.resetInsertion?.();
     this.state.phase = 'one-hold';
-    this.waitUntil(this.now()+2000, () => this.passengerTwo(), token);
+    this.waitUntil(this.now()+1000, () => this.passengerTwo(), token);
   }
   async passengerTwo() {
     const token = this.enter({kind:'PASSENGER', phase:'inserting'});
     await this.effects.insert();
     if (!this.valid(token)) return;
     this.state.phase = 'fastened-hold';
-    this.waitUntil(this.now()+2000, () => this.passengerOpen(token), token);
+    this.waitUntil(this.now()+1000, () => this.passengerRelease(), token);
+  }
+  async passengerRelease() {
+    const token=this.enter({kind:'PASSENGER',phase:'retracting'});
+    await this.effects.retract();
+    if(this.valid(token))this.passengerOpen(token);
   }
   confirmPassenger({startedAt=this.now(),recover=false} = {}) {
     if(this.state.kind==='PASSENGER_CONFIRMED_WAIT')return;

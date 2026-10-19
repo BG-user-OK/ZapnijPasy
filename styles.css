@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.7.0 */
+/* Zapnij Pasy vGPT_2.7.1 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -85,7 +85,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .hinge--right { right: 3px; }
 @keyframes flap-fall {
   0% { transform:rotateX(0deg); animation-timing-function:cubic-bezier(.52,.015,.83,.44); }
-  50% { transform:rotateX(-90deg); animation-timing-function:cubic-bezier(.18,.5,.36,1); }
+  50% { transform:rotateX(-90deg); animation-timing-function:cubic-bezier(.18,.5,.6,.7); }
   100% { transform:rotateX(-180deg); }
 }
 @keyframes upper-shade { 0% { opacity:0; } 50%,100% { opacity:.48; } }
@@ -114,7 +114,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 
 .is-running .transition-face--front::after { animation:view-front-shade var(--view-flip-duration) both; }
 .is-running .transition-face--back::after { animation:view-back-shade var(--view-flip-duration) both; }
-@keyframes view-flap-fall { 0% { transform:rotateX(0deg); animation-timing-function:cubic-bezier(.48,.03,.78,.44); } 50% { transform:rotateX(-90deg); animation-timing-function:cubic-bezier(.15,.55,.3,1); } 100% { transform:rotateX(-180deg); } }
+@keyframes view-flap-fall { 0% { transform:rotateX(0deg); animation-timing-function:cubic-bezier(.48,.03,.78,.44); } 50% { transform:rotateX(-90deg); animation-timing-function:cubic-bezier(.15,.55,.6,.7); } 100% { transform:rotateX(-180deg); } }
 
 @keyframes view-front-shade { 0% { opacity:0; } 50%,100% { opacity:.48; } }
 @keyframes view-back-shade { 0%,50% { opacity:.45; } 100% { opacity:0; } }
@@ -129,8 +129,10 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .buckle-front { z-index:3; clip-path:inset(36% 28% 38% 50%); -webkit-clip-path:inset(36% 28% 38% 50%); }
 .is-inserting .buckle-tongue { animation:buckle-insert var(--buckle-duration) cubic-bezier(.35,.05,.25,1) both; will-change:transform; }
 .is-fastened .buckle-tongue { transform:translateX(15%); }
+.is-retracting .buckle-tongue { animation:buckle-retract var(--buckle-duration) cubic-bezier(.35,.05,.25,1) both; will-change:transform; }
 @keyframes buckle-insert { from { transform:translateX(0); } to { transform:translateX(15%); } }
-@media (prefers-reduced-motion:reduce) { .is-inserting .buckle-tongue { animation:none; transform:translateX(15%); } }
+@keyframes buckle-retract { from { transform:translateX(15%); } to { transform:translateX(0); } }
+@media (prefers-reduced-motion:reduce) { .is-inserting .buckle-tongue { animation:none; transform:translateX(15%); } .is-retracting .buckle-tongue { animation:none; transform:translateX(0); } }
 
 /* Hidden during normal use; opened only by the approved three-second hold. */
 .pairing-panel[hidden]{display:none!important}
@@ -147,7 +149,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 /* Confirmation uses original sign pixels beneath synchronized marker strokes. */
 .confirmation-checks{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;justify-items:center;gap:12px;padding:inherit;pointer-events:none;z-index:5}
 .confirmation-checks svg{display:block;width:var(--sign-size);height:var(--sign-size);max-width:100%;overflow:visible}
-.confirmation-checks path{fill:none;stroke:#168a3f;stroke-width:56;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:465;stroke-dashoffset:0}
+.confirmation-checks path{fill:none;stroke:#168a3f;stroke-width:56;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:416;stroke-dashoffset:0}
 [data-confirmation="checks"] .confirmation-checks path{animation:confirmation-mark var(--confirmation-duration) linear var(--confirmation-delay) both}
 .confirmation-thumb{display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:transparent;pointer-events:none;z-index:6}
 .confirmation-thumb img{display:block;width:100%;height:100%;object-fit:contain;transform-origin:center;transform:scale(1)}
@@ -156,7 +158,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 [data-confirmation^="thumb-shrink"] .confirmation-thumb img{animation:confirmation-shrink var(--confirmation-duration) ease-in-out var(--confirmation-delay) both}
 [data-confirmation^="thumb-grow"] .confirmation-thumb img{animation:confirmation-grow var(--confirmation-duration) ease-in-out var(--confirmation-delay) both}
 [data-confirmation="fade"] .confirmation-thumb{animation:confirmation-fade var(--confirmation-duration) ease-in-out var(--confirmation-delay) both}
-@keyframes confirmation-mark{from{stroke-dashoffset:465}to{stroke-dashoffset:0}}
+@keyframes confirmation-mark{from{stroke-dashoffset:416}to{stroke-dashoffset:0}}
 @keyframes confirmation-first{from{transform:scale(.001)}to{transform:scale(1)}}
 @keyframes confirmation-shrink{from{transform:scale(1)}to{transform:scale(.7)}}
 @keyframes confirmation-grow{from{transform:scale(.7)}to{transform:scale(1)}}
@@ -208,8 +210,8 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 /* Damped movement belongs to the same rigid leaf, not to the digits or clock body. */
 .is-flipping.is-settling .falling-flap{animation:flap-settle var(--flap-settle-duration) ease-in-out both}
 .is-running.is-settling .transition-panel{animation:view-flap-settle var(--flap-settle-duration) ease-in-out both}
-@keyframes flap-settle{0%{transform:rotateX(-180deg)}20%{transform:rotateX(-162deg)}40%{transform:rotateX(-188deg)}65%{transform:rotateX(-175deg)}82%{transform:rotateX(-182deg)}100%{transform:rotateX(-180deg)}}
-@keyframes view-flap-settle{0%{transform:rotateX(-180deg)}20%{transform:rotateX(-162deg)}40%{transform:rotateX(-188deg)}65%{transform:rotateX(-175deg)}82%{transform:rotateX(-182deg)}100%{transform:rotateX(-180deg)}}
+@keyframes flap-settle{0%{transform:rotateX(-180deg);animation-timing-function:cubic-bezier(.3,.18,.6,1)}18%{transform:rotateX(-230deg)}45%{transform:rotateX(-140deg)}70%{transform:rotateX(-205deg)}88%{transform:rotateX(-168deg)}100%{transform:rotateX(-180deg)}}
+@keyframes view-flap-settle{0%{transform:rotateX(-180deg);animation-timing-function:cubic-bezier(.3,.18,.6,1)}18%{transform:rotateX(-230deg)}45%{transform:rotateX(-140deg)}70%{transform:rotateX(-205deg)}88%{transform:rotateX(-168deg)}100%{transform:rotateX(-180deg)}}
 .confirmation-blackout{position:absolute;inset:0;z-index:7;background:#000;opacity:0;pointer-events:none}
 [data-confirmation="scene-fade"] .confirmation-blackout{animation:confirmation-scene-fade var(--confirmation-duration) ease-in-out var(--confirmation-delay) both}
 [data-confirmation="black-hold"] .confirmation-blackout{opacity:1}

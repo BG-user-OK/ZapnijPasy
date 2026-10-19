@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.7.0 — two physical flaps between complete views.
+// Zapnij Pasy vGPT_2.7.1 — two physical flaps between complete views.
 export class ViewTransition {
   constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 820 } = {}) {
     this.stage = stage;
@@ -18,7 +18,7 @@ export class ViewTransition {
     this.overlay.className = 'view-transition';
     this.overlay.setAttribute('aria-hidden', 'true');
     this.overlay.style.setProperty('--view-flip-duration', duration + 'ms');
-    this.overlay.style.setProperty('--flap-settle-duration','520ms');
+    this.overlay.style.setProperty('--flap-settle-duration','1000ms');
     stage.append(this.overlay);
     this.overlay.addEventListener('animationend', event => {
       if(event.target!==this.lastPanel)return;
@@ -93,7 +93,7 @@ export class ViewTransition {
     const {width,height}=this.stage.getBoundingClientRect();
     this.lower.replaceChildren();this.lower.append(this.capture(this.views[this.mode],0,height/2,width,height));
     this.overlay.classList.add('is-settling');
-    this.timer=setTimeout(()=>this.finish(),640);
+    this.timer=setTimeout(()=>this.finish(),1120);
   }
   whenFinished() {
     if (!this.busy) return Promise.resolve();

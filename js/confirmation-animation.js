@@ -1,4 +1,5 @@
-// Zapnij Pasy vGPT_2.7.0 — shared confirmation timeline and cancellable presentation.
+// Zapnij Pasy vGPT_2.7.1 — shared confirmation timeline and cancellable presentation.
+export const CONFIRMATION_CHECK_PATH='M 100 270 L 210 370 L 390 173';
 export const CONFIRMATION_STEPS = Object.freeze([
   {name:'checks',duration:800,animation:'confirmation-mark'},
   {name:'checks-hold',duration:3000},
@@ -42,7 +43,7 @@ export class ConfirmationAnimation {
     for(let i=0;i<2;i++) {
       const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
       svg.setAttribute('viewBox','0 0 512 512');
-      const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d','M 100 270 L 210 370 L 420 140');
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');path.setAttribute('d',CONFIRMATION_CHECK_PATH);
       svg.append(path);layer.append(svg);
     }
     const thumb=document.createElement('div');thumb.className='confirmation-thumb';

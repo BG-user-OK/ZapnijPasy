@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.7.0 — one shared CSS animation start; completes when all actual tongues finish.
+// Zapnij Pasy vGPT_2.7.1 — one shared CSS animation start; completes when all actual tongues finish.
 // The original bitmap remains untouched beneath the two aligned belt strokes.
 export function createSeatBeltSign(image) {
   const sign=document.createElement('div');sign.className='seat-belt-person';
@@ -26,27 +26,29 @@ export class SeatBeltAnimation {
     this.tongues = new Set();
     host.style.setProperty('--buckle-duration', duration+'ms');
     host.addEventListener('animationend', event => {
-      if (event.animationName !== 'buckle-insert' || !this.resolve || !this.tongues.has(event.target)) return;
+      if (event.animationName !== this.animationName || !this.resolve || !this.tongues.has(event.target)) return;
       this.finished.add(event.target);
-      if (this.finished.size === this.tongues.size) this.stop(true);
+      if (this.finished.size === this.tongues.size) this.stop(this.targetFastened);
     });
   }
   startReminder() { this.host.classList.add('is-belt-reminding'); }
   stopReminder() { this.host.classList.remove('is-belt-reminding'); }
-  play() {
-    this.stop(false);
-    if (this.reducedMotion()) { this.host.classList.add('is-fastened'); return Promise.resolve(); }
+  play({reverse=false}={}) {
+    this.stop(reverse);
+    this.targetFastened=!reverse;
+    this.animationName=reverse?'buckle-retract':'buckle-insert';
+    if (this.reducedMotion()) { this.stop(!reverse); return Promise.resolve(); }
     this.tongues = new Set(this.host.querySelectorAll('.buckle-tongue'));
     const complete = new Promise(resolve => { this.resolve = resolve; });
     void this.host.offsetHeight;
-    this.host.classList.add('is-inserting');
-    this.timer = this.schedule(() => this.stop(true), this.duration+120);
+    this.host.classList.add(reverse?'is-retracting':'is-inserting');
+    this.timer = this.schedule(() => this.stop(!reverse), this.duration+120);
     return complete;
   }
   stop(complete = false) {
     if (this.timer !== null) this.cancel(this.timer);
     this.timer = null;
-    this.host.classList.remove('is-inserting', 'is-fastened');
+    this.host.classList.remove('is-inserting','is-retracting','is-fastened');
     if (complete) this.host.classList.add('is-fastened');
     this.finished.clear();
     this.tongues.clear();
