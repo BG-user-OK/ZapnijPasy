@@ -1,6 +1,6 @@
-// Zapnij Pasy vGPT_2.7.2 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.7.2';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.7.2';
+// Zapnij Pasy vGPT_2.7.3 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.7.3';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.7.3';
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id) }) {
     this.effects = effects;

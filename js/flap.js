@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.7.2 — one rigid, double-sided leaf for each complete value.
+// Zapnij Pasy vGPT_2.7.3 — one rigid, double-sided leaf for each complete value.
 export const FLAP_SETTLE_DURATION=1000;
 export class Flap {
   constructor(element, { render = (host, value) => {
@@ -36,6 +36,9 @@ export class Flap {
     }
     element.style.setProperty('--flip-duration', duration + 'ms');
     element.style.setProperty('--flap-settle-duration', settleDuration + 'ms');
+    element.addEventListener('animationstart', event => {
+      if(event.target===this.leaf&&event.animationName==='flap-settle')this.beginSettle();
+    });
     element.addEventListener('animationend', event => {
       if(event.target!==this.leaf)return;
       if(event.animationName==='flap-fall'&&this.phase==='fall')this.settles?this.beginSettle():this.finish();
@@ -60,6 +63,7 @@ export class Flap {
     this.paint('moving-upper', this.value);
     this.paint('moving-lower', value);
     void this.element.offsetHeight;
+    if(settle)this.element.classList.add('is-settle-enabled');
     this.element.classList.add('is-flipping');
     this.timer = setTimeout(() => this.settles ? this.beginSettle() : this.finish(), duration + 120);
     return true;
@@ -85,7 +89,7 @@ export class Flap {
       this.paint('lower', this.value);
     }
     this.phase=null;
-    this.element.classList.remove('is-flipping','is-settling');
+    this.element.classList.remove('is-flipping','is-settling','is-settle-enabled');
     this.waiters.splice(0).forEach(resolve => resolve());
   }
 }

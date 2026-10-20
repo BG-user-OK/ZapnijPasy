@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.7.2 */
+/* Zapnij Pasy vGPT_2.7.3 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -86,8 +86,8 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .hinge--left { left: 3px; }
 .hinge--right { right: 3px; }
 @keyframes flap-fall {
-  0% { transform:rotateX(0deg); animation-timing-function:cubic-bezier(.52,.015,.83,.44); }
-  50% { transform:rotateX(-90deg); animation-timing-function:cubic-bezier(.18,.5,.6,.7); }
+  0% { transform:rotateX(0deg); animation-timing-function:cubic-bezier(.333333,0,.666667,.481481); }
+  70% { transform:rotateX(-90deg); animation-timing-function:cubic-bezier(.333333,.222222,.666667,.506173); }
   100% { transform:rotateX(-180deg); }
 }
 @keyframes upper-shade { 0% { opacity:0; } 50%,100% { opacity:.48; } }
@@ -215,12 +215,13 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .stage.is-clock-settling > .view-transition > .transition-bottom{visibility:hidden}
 .stage.is-clock-return > .view-transition{perspective:calc(var(--card-height) * 7)}
 /* Damped movement belongs to the same rigid leaf, not to the digits or clock body. */
-.is-flipping.is-settling .falling-flap{animation:flap-settle var(--flap-settle-duration) ease-in-out both}
-.is-running.is-settling .transition-panel{animation:view-flap-settle var(--flap-settle-duration) ease-in-out both}
-@keyframes flap-settle{0%{transform:rotateX(-180deg);animation-timing-function:cubic-bezier(.3,.18,.6,1)}18%{transform:rotateX(-230deg)}45%{transform:rotateX(-155deg)}70%{transform:rotateX(-198deg)}88%{transform:rotateX(-172deg)}100%{transform:rotateX(-180deg)}}
-@keyframes view-flap-settle{0%{transform:rotateX(-180deg);animation-timing-function:cubic-bezier(.3,.18,.6,1)}18%{transform:rotateX(-230deg)}45%{transform:rotateX(-155deg)}70%{transform:rotateX(-198deg)}88%{transform:rotateX(-172deg)}100%{transform:rotateX(-180deg)}}
+.is-flipping.is-settle-enabled .falling-flap{animation:flap-fall var(--flip-duration) both,flap-settle var(--flap-settle-duration) ease-in-out var(--flip-duration) forwards}
+.stage.is-clock-return > .view-transition.is-running .transition-panel{animation:view-clock-fall var(--view-flip-duration) both,view-flap-settle var(--flap-settle-duration) ease-in-out var(--view-flip-duration) forwards}
+@keyframes view-clock-fall{0%{transform:rotateX(0deg);animation-timing-function:cubic-bezier(.333333,0,.666667,.481481)}70%{transform:rotateX(-90deg);animation-timing-function:cubic-bezier(.333333,.222222,.666667,.493827)}100%{transform:rotateX(-180deg)}}
+@keyframes flap-settle{0%{transform:rotateX(-180deg);animation-timing-function:cubic-bezier(.333333,.666667,.666667,1)}18%{transform:rotateX(-230deg)}45%{transform:rotateX(-155deg)}70%{transform:rotateX(-198deg)}88%{transform:rotateX(-172deg)}100%{transform:rotateX(-180deg)}}
+@keyframes view-flap-settle{0%{transform:rotateX(-180deg);animation-timing-function:cubic-bezier(.333333,.666667,.666667,1)}18%{transform:rotateX(-230deg)}45%{transform:rotateX(-155deg)}70%{transform:rotateX(-198deg)}88%{transform:rotateX(-172deg)}100%{transform:rotateX(-180deg)}}
 .confirmation-blackout{position:absolute;inset:0;z-index:7;background:#000;opacity:0;pointer-events:none}
 [data-confirmation="scene-fade"] .confirmation-blackout{animation:confirmation-scene-fade var(--confirmation-duration) ease-in-out var(--confirmation-delay) both}
 [data-confirmation="black-hold"] .confirmation-blackout{opacity:1}
 @keyframes confirmation-scene-fade{from{opacity:0}to{opacity:1}}
-@media(prefers-reduced-motion:reduce){.is-flipping.is-settling .falling-flap{animation:none}.confirmation-blackout{animation:none!important}[data-confirmation="scene-fade"] .confirmation-blackout{opacity:1}}
+@media(prefers-reduced-motion:reduce){.is-flipping.is-settle-enabled .falling-flap,.is-flipping.is-settling .falling-flap{animation:none}.confirmation-blackout{animation:none!important}[data-confirmation="scene-fade"] .confirmation-blackout{opacity:1}}
