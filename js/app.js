@@ -1,15 +1,16 @@
-// Zapnij Pasy vGPT_2.9.0
-import { Flap } from './flap.js?v=vGPT_2.9.0';
-import { Clock } from './clock.js?v=vGPT_2.9.0';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.9.0';
-import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.9.0';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.9.0';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.9.0';
-import { DisplayController } from './display-controller.js?v=vGPT_2.9.0';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.9.0';
-import { startUpdates } from './updates.js?v=vGPT_2.9.0';
-import { BrightnessControl } from './brightness.js?v=vGPT_2.9.0';
-import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.9.0';
+// Zapnij Pasy vGPT_2.9.1
+import { Flap } from './flap.js?v=vGPT_2.9.1';
+import { Clock } from './clock.js?v=vGPT_2.9.1';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.9.1';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.9.1';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.9.1';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.9.1';
+import { ProhibitionAnimation } from './prohibition-animation.js?v=vGPT_2.9.1';
+import { DisplayController } from './display-controller.js?v=vGPT_2.9.1';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.9.1';
+import { startUpdates } from './updates.js?v=vGPT_2.9.1';
+import { BrightnessControl } from './brightness.js?v=vGPT_2.9.1';
+import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.9.1';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -54,6 +55,7 @@ function fitViewport() {
   stage.style.setProperty('--sign-size',signSize+'px');
   Object.assign(toggle.style,{left:'0px',top:height/2+'px',width:width/2+'px',height:height/2+'px'});
   extras.resize();
+  prohibitions.resize();
 }
 function image(name, alt = '') {
   const element = document.createElement('img');
@@ -63,6 +65,7 @@ function image(name, alt = '') {
   return element;
 }
 function renderGraphic(view) {
+  prohibitions.cancel();
   confirmation.cancel();
   extras.cancel();
   buckle.stop(false);
@@ -90,8 +93,10 @@ function renderGraphic(view) {
     signs.setAttribute('aria-label',graphics[view].map(item=>item[1]).join('. '));
   }
   signs.dataset.content = view;
+  if(view==='rules'&&layout.portrait)prepareProhibitions();
   brightness.attach(signs);
 }
+function prepareProhibitions(){prohibitions.prepare([...signs.querySelectorAll('img')]);}
 const clock = new Clock({update(time,{animate}) {
   modules.forEach((module,index)=>module.setValue(time.digits[index],{animate:animate && !reducedMotion.matches}));
   root.setAttribute('aria-label',time.text);
@@ -99,6 +104,7 @@ const clock = new Clock({update(time,{animate}) {
 }});
 function settleClock() { clock.stop(); modules.forEach(module=>module.finish()); }
 const extras = new ExtrasAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
+const prohibitions = new ProhibitionAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 const confirmation = new ConfirmationAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 const buckle = new SeatBeltAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 transition = new ViewTransition(stage,{clock:root,signs},{
@@ -114,6 +120,7 @@ function cancelVisuals(completeInsertion=false) {
   interrupting = true;
   ++visualRevision;
   transition.finish();
+  prohibitions.cancel();
   extras.cancel();
   confirmation.cancel({preserveBlack:true});
   buckle.stopReminder();
@@ -126,12 +133,17 @@ controller = new DisplayController({continuous:()=>layout.portrait,effects:{
     if(view==='belts')brightness.close();
     const revision=++visualRevision;
     const target = view==='clock' ? 'clock' : 'signs';
+    const rollingEntry=layout.portrait&&view==='rules'&&animate;
+    const mechanical=animate&&!(layout.portrait&&(view==='rules'||currentView==='rules'));
     const changed = currentView!==view || (view==='belts'&&!!signs.querySelector('.confirmation-blackout'));
     currentView = view;
     toggle.setAttribute('aria-label',view==='clock' || view==='rules' || view==='extras' ? 'Nowy pasażer — pokaż przypomnienie o pasach' : 'Pasażer zapiął pasy — potwierdź');
     const reveal=async()=>{
-      transition.show(target,{animate,force:changed,prepare:()=>{if(target==='signs')renderGraphic(view);}});
+      let rolling=null;
+      transition.show(target,{animate:mechanical,force:changed,prepare:()=>{if(target==='signs')renderGraphic(view);if(rollingEntry)rolling=prohibitions.play('enter');}});
+      if(layout.portrait&&view==='rules'&&!animate){prepareProhibitions();prohibitions.rest();}
       await transition.whenFinished();
+      if(rolling)await rolling;
     };
     await reveal();
     if(revision!==visualRevision)return;
@@ -142,6 +154,7 @@ controller = new DisplayController({continuous:()=>layout.portrait,effects:{
     if(layout.portrait&&!document.hidden&&!suspended&&!interrupting&&!clock.running)clock.start();
   },
   extras:options=>extras.play(options),
+  departRules:options=>{prepareProhibitions();return prohibitions.play('exit',options);},
   insert:()=>buckle.play(),
   retract:()=>buckle.play({reverse:true}),
   resetInsertion:()=>{buckle.stop(false);buckle.startReminder();},
@@ -173,6 +186,8 @@ bindHoldControl(brightnessToggle,{onTap:()=>brightness.open(),onHold:()=>{bright
 layoutToggle.addEventListener('click',()=>{
   if(!started)return;
   brightness.close();layout.toggle(transition);layoutToggle.setAttribute('aria-pressed',String(layout.portrait));fitViewport();
+  if(!layout.portrait)prohibitions.finish(true);
+  else if(currentView==='rules'&&!prohibitions.pending){prepareProhibitions();prohibitions.rest();}
   if(layout.portrait&&!document.hidden&&!suspended&&!clock.running)clock.start();
   else if(!layout.portrait&&currentView!=='clock')settleClock();
   controller.layoutChanged();
@@ -185,7 +200,7 @@ window.addEventListener('pageshow',resume);
 window.addEventListener('pagehide',suspend);
 window.addEventListener('focus',resume);
 document.addEventListener('visibilitychange',()=>document.hidden ? suspend() : resume());
-reducedMotion.addEventListener('change',()=>{extras.updateMotion();if(reducedMotion.matches){modules.forEach(module=>module.finish());transition.finish();if(signs.classList.contains('is-inserting')||signs.classList.contains('is-retracting'))buckle.stop(signs.classList.contains('is-inserting'));}});
+reducedMotion.addEventListener('change',()=>{extras.updateMotion();prohibitions.updateMotion();if(reducedMotion.matches){modules.forEach(module=>module.finish());transition.finish();if(signs.classList.contains('is-inserting')||signs.classList.contains('is-retracting'))buckle.stop(signs.classList.contains('is-inserting'));}});
 fitViewport();
 clock.start();
 if(document.hidden)brightness.suspend();else brightness.requestLocation();
@@ -202,7 +217,8 @@ Promise.all(requiredAssets.map(name=>new Promise((resolve,reject)=>{
   toggle.disabled = false;
   layoutToggle.disabled = false;
   if(document.hidden) { controller.nextPair=saved.nextPair===1 ? 1 : 0; controller.state={kind:'CLOCK_WAITING_FOR_MINUTE'}; controller.suspend(); }
-  else await controller.start(saved || {});
+  // Pairing must be able to interrupt the first rolling entrance, without waiting for it.
+  else controller.start(saved || {}).catch(error=>console.warn(error.message));
   try{if(localStorage.getItem('zapnij-pasy-remote-pair-v1'))loadRemote();}catch{/* Local clock remains available. */}
 }).catch(error=>console.warn(error.message));
 checkForUpdates = startUpdates({
@@ -215,7 +231,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.9.0'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.9.1'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

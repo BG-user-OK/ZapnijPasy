@@ -1,6 +1,7 @@
-// Zapnij Pasy vGPT_2.9.0 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.9.0';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.9.0';
+// Zapnij Pasy vGPT_2.9.1 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.9.1';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.9.1';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.9.1';
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false }) {
     this.effects = effects;
@@ -40,7 +41,7 @@ export class DisplayController {
   start({ nextPair = 0 } = {}) {
     this.nextPair = nextPair === 1 ? 1 : 0;
     this.suspended = false;
-    return this.restoreClock(false);
+    return this.restoreClock(this.continuous());
   }
   async restoreClock(animate = true) {
     if(this.continuous()){
@@ -73,11 +74,20 @@ export class DisplayController {
       this.runExtras(token);return true;
     }
     this.state.phase = 'hold';
-    this.waitUntil(this.now()+60000, () => this.restoreClock(), token);
+    this.waitUntil(this.now()+60000, () => this.finishPair(), token);
     return true;
   }
+  finishPair(){
+    if(this.continuous()&&this.state.pair===0&&this.effects.departRules)return this.departRules();
+    return this.restoreClock();
+  }
+  async departRules({startedAt=this.now()}={}){
+    const token=this.enter({kind:'GRAPHIC_PAIR_VISIBLE',phase:'exit',pair:0,startedAt,deadline:startedAt+PROHIBITION_ROLL_DURATION});
+    const completed=await this.effects.departRules({elapsed:Math.max(0,this.now()-startedAt)});
+    if(this.valid(token)&&completed!==false)return this.restoreClock();
+  }
   layoutChanged(){
-    if(!this.suspended&&this.continuous()&&this.state.kind.startsWith('CLOCK'))return this.restoreClock(false);
+    if(!this.suspended&&this.continuous()&&this.state.kind.startsWith('CLOCK'))return this.restoreClock(true);
   }
   async runExtras(token) {
     const elapsed=Math.max(0,this.now()-this.state.startedAt);
@@ -170,10 +180,14 @@ export class DisplayController {
       if(!await this.reveal('extras',token,false))return;
       return this.runExtras(token);
     }
+    if(saved.kind==='GRAPHIC_PAIR_VISIBLE'&&saved.phase==='exit'&&saved.deadline>this.now()&&this.continuous()){
+      const token=this.enter(saved);if(!await this.reveal('rules',token,false))return;
+      return this.departRules({startedAt:saved.startedAt});
+    }
     if (saved.kind === 'GRAPHIC_PAIR_VISIBLE' && saved.phase === 'hold' && saved.deadline > this.now()) {
       const token = this.enter(saved);
       if (!await this.reveal(saved.pair === 0 ? 'rules' : 'extras', token, false)) return;
-      this.waitUntil(saved.deadline, () => this.restoreClock(), token);
+      this.waitUntil(saved.deadline, () => this.finishPair(), token);
       return;
     }
     if (saved.kind === 'CLOCK_POST_MINUTE_WAIT' && saved.phase === 'delay' && saved.deadline > this.now()) {

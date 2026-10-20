@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.9.0 */
+/* Zapnij Pasy vGPT_2.9.1 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -196,6 +196,14 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 [data-confirmation="complete"] .confirmation-thumb{opacity:0}
 
 /* Sequential extras: black scene, descending camera, then a wheel-like rolling piggy. */
+.prohibition-scene{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.prohibition-track{position:absolute;inset:0;transform:translate3d(0,0,0)}
+.prohibition-actor{position:absolute;width:var(--prohibition-size);height:var(--prohibition-size)}
+.prohibition-actor img{display:block;width:100%;height:100%;object-fit:contain}
+.is-prohibition-rolling .prohibition-track{animation:prohibition-travel 4000ms cubic-bezier(.35,0,.65,1) var(--prohibition-delay) both;will-change:transform}
+.is-prohibition-rolling .prohibition-actor img{animation:prohibition-roll 4000ms cubic-bezier(.35,0,.65,1) var(--prohibition-delay) both;will-change:transform}
+@keyframes prohibition-travel{from{transform:translate3d(var(--prohibition-from),0,0)}to{transform:translate3d(var(--prohibition-to),0,0)}}
+@keyframes prohibition-roll{from{transform:rotate(var(--prohibition-angle-from))}to{transform:rotate(var(--prohibition-angle-to))}}
 .extras-scene{position:absolute;inset:0;overflow:hidden;background:#000;pointer-events:none}
 .extras-camera,.extras-piggy{position:absolute;width:var(--extras-size);height:var(--extras-size);pointer-events:none}
 .extras-scene img{display:block;width:100%;height:100%;object-fit:contain}
