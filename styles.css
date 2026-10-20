@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.8.0 */
+/* Zapnij Pasy vGPT_2.8.1 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -109,7 +109,8 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .transition-face { position:absolute; inset:0; overflow:hidden; -webkit-backface-visibility:hidden; backface-visibility:hidden; background:var(--page); }
 .transition-face--back { transform:rotateX(180deg); }
 .transition-face::after { content:""; position:absolute; inset:0; pointer-events:none; background:#000; opacity:0; }
-.snapshot-viewport { position:absolute; pointer-events:none; }
+/* Keep copied dimmers below neighboring moving panels, inside their own snapshot. */
+.snapshot-viewport { position:absolute; pointer-events:none; isolation:isolate; }
 .snapshot-viewport > .clock, .snapshot-viewport > .signs { visibility:visible !important; }
 .transition-bottom { position:absolute; left:0; top:50%; width:100%; height:50%; overflow:hidden; }
 .is-running .transition-panel { animation:view-flap-fall var(--view-flip-duration) both; will-change:transform; }
@@ -230,7 +231,8 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 /* The moving leaf is the only lower face; a flat duplicate suggests a stop. */
 .digit.is-settling > .half--lower{visibility:hidden}
 .stage.is-clock-settling > .clock .digit > .half--lower{visibility:hidden}
-.stage.is-clock-settling > .view-transition > .transition-bottom{visibility:hidden}
+/* Snapshot children force visibility: remove this duplicate from painting entirely. */
+.stage.is-clock-settling > .view-transition > .transition-bottom{visibility:hidden;display:none}
 .stage.is-clock-return > .view-transition{perspective:calc(var(--card-height) * 7)}
 /* Damped movement belongs to the same rigid leaf, not to the digits or clock body. */
 .is-flipping.is-settle-enabled .falling-flap{animation:flap-fall var(--flip-duration) both,flap-settle var(--flap-settle-duration) ease-in-out var(--flip-duration) forwards}

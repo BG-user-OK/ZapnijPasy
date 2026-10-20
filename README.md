@@ -1,4 +1,6 @@
-# Zapnij Pasy — vGPT_2.8.0
+# Zapnij Pasy — vGPT_2.8.1
+
+Full clock returns retain the selected brightness throughout the falling panels' settling motion. Snapshot dimming is contained per face, without a lower-digit brightness jump at completion.
 
 A two-module mechanical H/HH + MM clock PWA for iPhone 7 / iOS 15 in landscape. Hours 0–23 and two-digit minutes each occupy one complete split-flap assembly with two hinge clips. Hours have no leading zero and remain centered. A single square beside the hour replaces the colon. Only changed complete modules flip. Time always comes from the device.
 
@@ -32,13 +34,13 @@ The time flaps use one rigid double-sided leaf over 800 ms. Whole-view transitio
 
 All active display graphics and installation icons are organized under Grafiki/. Non-piggy sign rings share a thinner consistent width; both prohibition slashes match. The piggy image and buckle mechanism retain their approved appearance.
 
-PWA vGPT_2.8.0: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
+PWA vGPT_2.8.1: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
 
-Visual correction vGPT_2.8.0: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
+Visual correction vGPT_2.8.1: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
 
-PWA vGPT_2.8.0: fixed left-person/right-buckle passenger layout; no alternating belt screens. Only the right tongue repeats. Confirmation, clock/message cycle, assets and pilot vGPT_2.3.0 remain unchanged.
+PWA vGPT_2.8.1: fixed left-person/right-buckle passenger layout; no alternating belt screens. Only the right tongue repeats. Confirmation, clock/message cycle, assets and pilot vGPT_2.3.0 remain unchanged.
 
-PWA vGPT_2.8.0 replaces the simultaneous camera/piggy pair: camera 4 s entrance + 30 s fully visible downward movement + 4 s exit, black 3 s, rolling piggy 4 s entrance + 11 s upright hold + 4 s exit. Original assets and piggy size preserved. Resume uses elapsed time; passenger commands cancel the scene. Other behavior and Android vGPT_2.3.0 unchanged.
+PWA vGPT_2.8.1 replaces the simultaneous camera/piggy pair: camera 4 s entrance + 30 s fully visible downward movement + 4 s exit, black 3 s, rolling piggy 4 s entrance + 11 s upright hold + 4 s exit. Original assets and piggy size preserved. Resume uses elapsed time; passenger commands cancel the scene. Other behavior and Android vGPT_2.3.0 unchanged.
 
 Completed camera/piggy scenes stop all travel animation and retain the final black frame before clock flap snapshots, including timer fallback and expired resume. This prevents cloned icons from replaying during the clock return.
 
