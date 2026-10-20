@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.9.1 — one rigid, double-sided leaf for each complete value.
+// Zapnij Pasy vGPT_2.9.2 — one rigid, double-sided leaf for each complete value.
 export const FLAP_SETTLE_DURATION=1000;
 export class Flap {
   constructor(element, { render = (host, value) => {

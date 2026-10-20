@@ -1,16 +1,16 @@
-// Zapnij Pasy vGPT_2.9.1
-import { Flap } from './flap.js?v=vGPT_2.9.1';
-import { Clock } from './clock.js?v=vGPT_2.9.1';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.9.1';
-import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.9.1';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.9.1';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.9.1';
-import { ProhibitionAnimation } from './prohibition-animation.js?v=vGPT_2.9.1';
-import { DisplayController } from './display-controller.js?v=vGPT_2.9.1';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.9.1';
-import { startUpdates } from './updates.js?v=vGPT_2.9.1';
-import { BrightnessControl } from './brightness.js?v=vGPT_2.9.1';
-import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.9.1';
+// Zapnij Pasy vGPT_2.9.2
+import { Flap } from './flap.js?v=vGPT_2.9.2';
+import { Clock } from './clock.js?v=vGPT_2.9.2';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.9.2';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.9.2';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.9.2';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.9.2';
+import { ProhibitionAnimation } from './prohibition-animation.js?v=vGPT_2.9.2';
+import { DisplayController } from './display-controller.js?v=vGPT_2.9.2';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.9.2';
+import { startUpdates } from './updates.js?v=vGPT_2.9.2';
+import { BrightnessControl } from './brightness.js?v=vGPT_2.9.2';
+import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.9.2';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -231,7 +231,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.9.1'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.9.2'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.9.1 — one cancellable camera/rolling-piggy timeline.
+// Zapnij Pasy vGPT_2.9.2 — one cancellable camera/rolling-piggy timeline.
 export const EXTRAS_DURATION=60000;
 export const EXTRAS_STEPS=Object.freeze([
  {name:'camera-enter',start:0,end:4000},{name:'camera-visible',start:4000,end:34000},
@@ -7,17 +7,21 @@ export const EXTRAS_STEPS=Object.freeze([
  {name:'piggy-exit',start:56000,end:60000}
 ]);
 export function extrasPhase(elapsed){return EXTRAS_STEPS.find(step=>elapsed<step.end)?.name||'complete';}
-export function extrasGeometry({width,height,size}) {
- const diameter=Math.max(1,Math.min(size,width-24,height-20));
+export function extrasGeometry({width,height,size,marginX=12,marginY=10}) {
+ const diameter=Math.max(1,Math.min(size,width-2*marginX,height-2*marginY));
  const centerX=(width-diameter)/2;
- return {size:diameter,cameraStart:-diameter,cameraTop:10,cameraBottom:height-diameter-10,cameraEnd:height,
+ return {size:diameter,cameraStart:-diameter,cameraTop:marginY,cameraBottom:height-diameter-marginY,cameraEnd:height,
   centerX,piggyStart:width,piggyEnd:-diameter,centerY:(height-diameter)/2,
   rollStart:(width-centerX)/(diameter/2)*180/Math.PI,rollEnd:(-diameter-centerX)/(diameter/2)*180/Math.PI};
 }
 export class ExtrasAnimation {
  constructor(host,{reducedMotion=()=>false,now=()=>Date.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id),measure}={}) {
   this.host=host;this.reducedMotion=reducedMotion;this.now=now;this.schedule=schedule;this.cancelTimer=cancel;this.pending=null;this.startedAt=0;
-  this.measure=measure||(()=>{const rect=host.getBoundingClientRect();return {...rect,width:rect.width,height:rect.height,size:parseFloat(getComputedStyle(host).getPropertyValue('--sign-size'))||Math.min(rect.height-20,(rect.width-36)/2)};});
+  this.measure=measure||(()=>{
+   const rect=host.getBoundingClientRect(),style=getComputedStyle(host),portrait=host.closest('.stage')?.dataset.layout==='portrait';
+   return {width:rect.width,height:rect.height,size:portrait?Math.min(rect.width,rect.height):parseFloat(style.getPropertyValue('--sign-size'))||Math.min(rect.height-20,(rect.width-36)/2),
+    ...(portrait?{marginX:Math.max(parseFloat(style.paddingLeft)||0,parseFloat(style.paddingRight)||0),marginY:Math.max(parseFloat(style.paddingTop)||0,parseFloat(style.paddingBottom)||0)}:{})};
+  });
   host.addEventListener('animationend',event=>{
    if(this.pending&&event.target===this.host.querySelector('.extras-piggy')&&['extras-piggy-travel','extras-piggy-reduced'].includes(event.animationName)&&this.now()-this.startedAt>=EXTRAS_DURATION-32)this.finish(true);
   });
