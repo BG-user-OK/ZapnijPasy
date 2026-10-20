@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.8.1 */
+/* Zapnij Pasy vGPT_2.9.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -153,6 +153,13 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .brightness-toggle{position:absolute;z-index:31;left:0;top:0;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
 .brightness-toggle:focus{outline:none}
 .brightness-toggle:focus-visible{outline:1px solid #8a8d88;outline-offset:-3px}
+.layout-toggle{position:absolute;z-index:31;left:50%;top:0;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
+.layout-toggle:focus{outline:none}
+.layout-toggle:focus-visible{outline:1px solid #8a8d88;outline-offset:-3px}
+.stage[data-layout="portrait"] > .signs{height:50%;bottom:auto;overflow:hidden}
+.stage[data-layout="portrait"] > .view-transition{height:50%}
+.stage[data-layout="portrait"] > .clock{top:50%;height:50%;visibility:visible}
+.blank-view{position:absolute;inset:0;background:var(--page);visibility:hidden;pointer-events:none}
 .brightness-panel[hidden]{display:none!important}
 .brightness-panel{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;background:transparent;touch-action:manipulation}
 .brightness-controls{width:calc(100% - 24px);max-height:calc(100% - 16px);overflow:auto;padding:12px 8px;border:1px solid #35393e;border-radius:12px;background:#111418;box-shadow:0 8px 24px #0008;color:#a8adb1;font:16px system-ui}

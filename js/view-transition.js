@@ -1,6 +1,6 @@
-// Zapnij Pasy vGPT_2.8.1 — two physical flaps between complete views.
+// Zapnij Pasy vGPT_2.9.0 — two physical flaps between complete views.
 export class ViewTransition {
-  constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 820 } = {}) {
+  constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 820, measure } = {}) {
     this.stage = stage;
     this.views = views;
     this.beforeChange = beforeChange;
@@ -9,6 +9,7 @@ export class ViewTransition {
     this.onFinish = onFinish;
     this.reducedMotion = reducedMotion;
     this.duration = duration;
+    this.measure=measure||(()=>this.stage.getBoundingClientRect());
     this.phase = null;
     this.mode = 'clock';
     this.busy = false;
@@ -37,6 +38,10 @@ export class ViewTransition {
     this.onChange(this.mode);
   }
 
+  configure(stage,views) {
+    this.finish();this.stage=stage;this.views=views;stage.append(this.overlay);this.applyMode();
+  }
+
   capture(view, x, y, width, height) {
     const viewport = document.createElement('div');
     viewport.className = 'snapshot-viewport';
@@ -63,7 +68,7 @@ export class ViewTransition {
     this.busy = true;
     this.applyMode();
     if (!animate || this.reducedMotion()) { this.finish(); return true; }
-    const { width, height } = this.stage.getBoundingClientRect();
+    const { width, height } = this.measure();
     const incoming = this.views[target];
     const lower = document.createElement('div');
     lower.className = 'transition-bottom';
@@ -96,7 +101,7 @@ export class ViewTransition {
     if(!this.busy||this.phase!=='fall')return;
     clearTimeout(this.timer);this.phase='settling';
     this.stage.classList.add('is-clock-settling');
-    const {width,height}=this.stage.getBoundingClientRect();
+    const {width,height}=this.measure();
     this.lower.replaceChildren();this.lower.append(this.capture(this.views[this.mode],0,height/2,width,height));
     this.overlay.classList.add('is-settling');
     this.timer=setTimeout(()=>this.finish(),1120);

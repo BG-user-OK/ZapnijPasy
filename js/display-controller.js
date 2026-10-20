@@ -1,8 +1,8 @@
-// Zapnij Pasy vGPT_2.8.1 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.8.1';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.8.1';
+// Zapnij Pasy vGPT_2.9.0 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.9.0';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.9.0';
 export class DisplayController {
-  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id) }) {
+  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false }) {
     this.effects = effects;
     this.now = now;
     this.schedule = schedule;
@@ -13,6 +13,7 @@ export class DisplayController {
     this.timer = null;
     this.suspended = false;
     this.lastTap = null;
+    this.continuous=continuous;
   }
   invalidate() {
     ++this.token;
@@ -42,12 +43,17 @@ export class DisplayController {
     return this.restoreClock(false);
   }
   async restoreClock(animate = true) {
+    if(this.continuous()){
+      if(await this.showPair(this.nextPair,{animate}))this.effects.idle?.();
+      return;
+    }
     const token = this.enter({kind:'CLOCK', phase:'transition'});
     if (!await this.reveal('clock', token, animate)) return;
     this.state = {kind:'CLOCK_WAITING_FOR_MINUTE', minute:Math.floor(this.now()/60000)};
     this.effects.idle?.();
   }
   onClockMinute(time, { natural = false, completed = Promise.resolve() } = {}) {
+    if(this.continuous())return;
     if (this.suspended || this.state.kind !== 'CLOCK_WAITING_FOR_MINUTE') return;
     if (!natural) { this.state.minute = time.minute; return; }
     if (time.minute <= this.state.minute) return;
@@ -58,16 +64,20 @@ export class DisplayController {
       this.waitUntil(this.now()+10000, () => this.showPair(this.nextPair), token);
     });
   }
-  async showPair(pair) {
+  async showPair(pair,{animate=true}={}) {
     const token = this.enter({kind:'GRAPHIC_PAIR_VISIBLE', phase:'transition', pair});
-    if (!await this.reveal(pair === 0 ? 'rules' : 'extras', token)) return;
+    if (!await this.reveal(pair === 0 ? 'rules' : 'extras', token,animate)) return false;
     this.nextPair = pair === 0 ? 1 : 0;
     if(pair===1){
       this.state.phase='sequence';this.state.startedAt=this.now();this.state.deadline=this.now()+EXTRAS_DURATION;
-      return this.runExtras(token);
+      this.runExtras(token);return true;
     }
     this.state.phase = 'hold';
     this.waitUntil(this.now()+60000, () => this.restoreClock(), token);
+    return true;
+  }
+  layoutChanged(){
+    if(!this.suspended&&this.continuous()&&this.state.kind.startsWith('CLOCK'))return this.restoreClock(false);
   }
   async runExtras(token) {
     const elapsed=Math.max(0,this.now()-this.state.startedAt);
@@ -175,5 +185,5 @@ export class DisplayController {
     return this.restoreClock(false);
   }
   snapshot() { return {nextPair:this.nextPair}; }
-  get safeToReload() { return !this.suspended && this.state.kind === 'CLOCK_WAITING_FOR_MINUTE'; }
+  get safeToReload() { return !this.suspended && (this.state.kind === 'CLOCK_WAITING_FOR_MINUTE'||(this.continuous()&&this.state.kind==='GRAPHIC_PAIR_VISIBLE'&&this.state.pair===0&&this.state.phase==='hold')); }
 }
