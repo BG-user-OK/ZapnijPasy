@@ -1,18 +1,23 @@
-// Zapnij Pasy vGPT_2.7.3
-import { Flap } from './flap.js?v=vGPT_2.7.3';
-import { Clock } from './clock.js?v=vGPT_2.7.3';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.7.3';
-import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.7.3';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.7.3';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.7.3';
-import { DisplayController } from './display-controller.js?v=vGPT_2.7.3';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.7.3';
-import { startUpdates } from './updates.js?v=vGPT_2.7.3';
+// Zapnij Pasy vGPT_2.8.0
+import { Flap } from './flap.js?v=vGPT_2.8.0';
+import { Clock } from './clock.js?v=vGPT_2.8.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.8.0';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.8.0';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.8.0';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.8.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.8.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.8.0';
+import { startUpdates } from './updates.js?v=vGPT_2.8.0';
+import { BrightnessControl } from './brightness.js?v=vGPT_2.8.0';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
 const signs = stage.querySelector('.signs');
 const toggle = stage.querySelector('.mode-toggle');
+const brightnessToggle = stage.querySelector('.brightness-toggle');
+const brightness = new BrightnessControl();
+brightness.attach(root);
+brightness.attach(signs);
 const modules = Array.from(root.querySelectorAll('.digit'), element => new Flap(element));
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const UPDATE_STATE = 'zapnij-pasy-update-sequence-v1';
@@ -47,9 +52,7 @@ function fitViewport() {
   stage.style.setProperty('--card-height',cardHeight+'px');
   stage.style.setProperty('--digit-size',Math.floor(Math.min(cardHeight*1.14,moduleWidth*.94))+'px');
   stage.style.setProperty('--sign-size',Math.floor(Math.min(usableHeight,(width-36)/2))+'px');
-  const first = modules[0].element.getBoundingClientRect();
-  const bounds = stage.getBoundingClientRect();
-  Object.assign(toggle.style,{left:first.left-bounds.left+'px',top:first.top-bounds.top+'px',width:first.width+'px',height:first.height+'px'});
+  Object.assign(toggle.style,{left:'0px',top:height/2+'px',width:width/2+'px',height:height/2+'px'});
   extras.resize();
 }
 function image(name, alt = '') {
@@ -87,6 +90,7 @@ function renderGraphic(view) {
     signs.setAttribute('aria-label',graphics[view].map(item=>item[1]).join('. '));
   }
   signs.dataset.content = view;
+  brightness.attach(signs);
 }
 const clock = new Clock({update(time,{animate}) {
   modules.forEach((module,index)=>module.setValue(time.digits[index],{animate:animate && !reducedMotion.matches}));
@@ -116,6 +120,7 @@ function cancelVisuals(completeInsertion=false) {
 }
 controller = new DisplayController({effects:{
   async show(view,{animate}) {
+    if(view==='belts')brightness.close();
     const revision=++visualRevision;
     const target = view==='clock' ? 'clock' : 'signs';
     const changed = currentView!==view || (view==='belts'&&!!signs.querySelector('.confirmation-blackout'));
@@ -136,12 +141,13 @@ controller = new DisplayController({effects:{
   insert:()=>buckle.play(),
   retract:()=>buckle.play({reverse:true}),
   resetInsertion:()=>{buckle.stop(false);buckle.startReminder();},
-  confirmation:(name,options)=>confirmation.play(name,options),
+  confirmation:(name,options)=>{brightness.close();return confirmation.play(name,options);},
   freeze:()=>cancelVisuals(true),
   cancel:()=>cancelVisuals(false),
   idle:()=>{remote?.clockRestored();checkForUpdates();}
 }});
 function suspend() {
+  brightness.suspend();
   remote?.suspend();
   suspended = true;
   controller.suspend();
@@ -149,6 +155,7 @@ function suspend() {
 }
 function resume() {
   if(document.hidden) return;
+  brightness.resume();
   suspended = false;
   remote?.resume();
   fitViewport();
@@ -158,6 +165,7 @@ function resume() {
   }
 }
 bindHoldControl(toggle,{onTap:()=>{if(remote)remote.localTap();else if(controller.tap())++fallbackInteractions;},onHold:()=>loadRemote({show:true})});
+bindHoldControl(brightnessToggle,{onTap:()=>brightness.open(),onHold:()=>{brightness.close();loadRemote({show:true});}});
 window.addEventListener('resize',fitViewport);
 window.addEventListener('orientationchange',fitViewport);
 window.visualViewport?.addEventListener('resize',fitViewport);
@@ -169,6 +177,7 @@ document.addEventListener('visibilitychange',()=>document.hidden ? suspend() : r
 reducedMotion.addEventListener('change',()=>{extras.updateMotion();if(reducedMotion.matches){modules.forEach(module=>module.finish());transition.finish();if(signs.classList.contains('is-inserting')||signs.classList.contains('is-retracting'))buckle.stop(signs.classList.contains('is-inserting'));}});
 fitViewport();
 clock.start();
+if(document.hidden)brightness.suspend();else brightness.requestLocation();
 const requiredAssets = ['thumbs-up.svg','seat-belt','no-food-drink','no-smoking-vaping','cctv','tip','buckle-base','buckle-tongue'];
 Promise.all(requiredAssets.map(name=>new Promise((resolve,reject)=>{
   const asset = new Image();
@@ -186,7 +195,7 @@ Promise.all(requiredAssets.map(name=>new Promise((resolve,reject)=>{
 }).catch(error=>console.warn(error.message));
 checkForUpdates = startUpdates({
   isBusy:()=>transition.busy || modules.some(module=>module.pending!==undefined),
-  deferReload:()=>!controller.safeToReload,
+  deferReload:()=>!controller.safeToReload || !brightness.panel.hidden,
   beforeReload:()=>{try{sessionStorage.setItem(UPDATE_STATE,JSON.stringify(controller.snapshot()));}catch{} suspend();}
 }) || (()=>{});
 
@@ -194,7 +203,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.7.3'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.8.0'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

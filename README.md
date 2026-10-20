@@ -1,4 +1,4 @@
-# Zapnij Pasy — vGPT_2.7.3
+# Zapnij Pasy — vGPT_2.8.0
 
 A two-module mechanical H/HH + MM clock PWA for iPhone 7 / iOS 15 in landscape. Hours 0–23 and two-digit minutes each occupy one complete split-flap assembly with two hinge clips. Hours have no leading zero and remain centered. A single square beside the hour replaces the colon. Only changed complete modules flip. Time always comes from the device.
 
@@ -32,13 +32,13 @@ The time flaps use one rigid double-sided leaf over 800 ms. Whole-view transitio
 
 All active display graphics and installation icons are organized under Grafiki/. Non-piggy sign rings share a thinner consistent width; both prohibition slashes match. The piggy image and buckle mechanism retain their approved appearance.
 
-PWA vGPT_2.7.3: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
+PWA vGPT_2.8.0: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
 
-Visual correction vGPT_2.7.3: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
+Visual correction vGPT_2.8.0: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
 
-PWA vGPT_2.7.3: fixed left-person/right-buckle passenger layout; no alternating belt screens. Only the right tongue repeats. Confirmation, clock/message cycle, assets and pilot vGPT_2.3.0 remain unchanged.
+PWA vGPT_2.8.0: fixed left-person/right-buckle passenger layout; no alternating belt screens. Only the right tongue repeats. Confirmation, clock/message cycle, assets and pilot vGPT_2.3.0 remain unchanged.
 
-PWA vGPT_2.7.3 replaces the simultaneous camera/piggy pair: camera 4 s entrance + 30 s fully visible downward movement + 4 s exit, black 3 s, rolling piggy 4 s entrance + 11 s upright hold + 4 s exit. Original assets and piggy size preserved. Resume uses elapsed time; passenger commands cancel the scene. Other behavior and Android vGPT_2.3.0 unchanged.
+PWA vGPT_2.8.0 replaces the simultaneous camera/piggy pair: camera 4 s entrance + 30 s fully visible downward movement + 4 s exit, black 3 s, rolling piggy 4 s entrance + 11 s upright hold + 4 s exit. Original assets and piggy size preserved. Resume uses elapsed time; passenger commands cancel the scene. Other behavior and Android vGPT_2.3.0 unchanged.
 
 Completed camera/piggy scenes stop all travel animation and retain the final black frame before clock flap snapshots, including timer fallback and expired resume. This prevents cloned icons from replaying during the clock return.
 
@@ -51,3 +51,6 @@ Current motion: after confirmation, the entire scene fades to black over 800 ms 
 Settling now renders only the moving lower leaf, with shared perspective and an inward-first free edge followed by two diminishing oscillations. Stationary lower content is restored on completion or interruption. Settling remains 1000 ms; graphic entrance timing and all other scenes are unchanged.
 
 The fall and settling tracks are pre-scheduled on one CSS timeline. Speed carries through the bottom continuously and decelerates at the rear turning point; phase callbacks only manage layers. Geometry, total durations and all other scenes remain unchanged.
+
+Brightness: upper-left quarter opens six levels (10/20/35/50/75/100%). A choice applies immediately, including daytime, saves the night level and closes the bar. Default day 100%, initial night 20%; the next sunrise/sunset restores automatic scheduling. Device geolocation is sampled periodically only while visible; a recent coarse local fix or Katowice provides fallback. Solar times are calculated offline; no location is uploaded. Allow browser location permission on the actual display. Lower-left retains passenger control and both left quarters retain the three-second pairing hold. All belt/check/thumb content stays full-brightness; ordinary scenes and their flap snapshots follow the profile. This changes rendered content, not the Toyota backlight.
+Solar reference: https://www.gml.noaa.gov/grad/solcalc/calcdetails.html ; independent development checks: https://aa.usno.navy.mil/data/api .
