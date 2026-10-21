@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.9.2 */
+/* Zapnij Pasy vGPT_2.9.3 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -159,6 +159,9 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .stage[data-layout="portrait"] > .signs{height:50%;bottom:auto;overflow:hidden}
 .stage[data-layout="portrait"] > .signs[data-content="rules"],
 .stage[data-layout="portrait"] > .signs[data-content="extras"]{padding:max(4px,env(safe-area-inset-top)) max(4px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left));column-gap:6px}
+.stage[data-layout="landscape"] .signs{padding:max(4px,env(safe-area-inset-top)) max(4px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left));column-gap:6px}
+.stage[data-layout="landscape"] .signs[data-content="rules"]{background:#000}
+.stage[data-layout="landscape"] .seat-belt-person{width:var(--sign-size);height:var(--sign-size)}
 .stage[data-layout="portrait"] > .view-transition{height:50%}
 .stage[data-layout="portrait"] > .clock{top:50%;height:50%;visibility:visible}
 .blank-view{position:absolute;inset:0;background:var(--page);visibility:hidden;pointer-events:none}
@@ -177,7 +180,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .pairing-panel [hidden]{display:none!important}
 
 /* Confirmation uses original sign pixels beneath synchronized marker strokes. */
-.confirmation-checks{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;justify-items:center;gap:12px;padding:inherit;pointer-events:none;z-index:5}
+.confirmation-checks{position:absolute;inset:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;justify-items:center;gap:inherit;padding:inherit;pointer-events:none;z-index:5}
 .confirmation-checks svg{display:block;width:var(--sign-size);height:var(--sign-size);max-width:100%;overflow:visible}
 .confirmation-checks path{fill:none;stroke:#168a3f;stroke-width:56;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:416;stroke-dashoffset:0}
 [data-confirmation="checks"] .confirmation-checks path{animation:confirmation-mark var(--confirmation-duration) linear var(--confirmation-delay) both}

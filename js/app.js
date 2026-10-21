@@ -1,16 +1,16 @@
-// Zapnij Pasy vGPT_2.9.2
-import { Flap } from './flap.js?v=vGPT_2.9.2';
-import { Clock } from './clock.js?v=vGPT_2.9.2';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.9.2';
-import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.9.2';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.9.2';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.9.2';
-import { ProhibitionAnimation } from './prohibition-animation.js?v=vGPT_2.9.2';
-import { DisplayController } from './display-controller.js?v=vGPT_2.9.2';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.9.2';
-import { startUpdates } from './updates.js?v=vGPT_2.9.2';
-import { BrightnessControl } from './brightness.js?v=vGPT_2.9.2';
-import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.9.2';
+// Zapnij Pasy vGPT_2.9.3
+import { Flap } from './flap.js?v=vGPT_2.9.3';
+import { Clock } from './clock.js?v=vGPT_2.9.3';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.9.3';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.9.3';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.9.3';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.9.3';
+import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.9.3';
+import { DisplayController } from './display-controller.js?v=vGPT_2.9.3';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.9.3';
+import { startUpdates } from './updates.js?v=vGPT_2.9.3';
+import { BrightnessControl } from './brightness.js?v=vGPT_2.9.3';
+import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.9.3';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -52,7 +52,9 @@ function fitViewport() {
   stage.style.setProperty('--gap', gap+'px');
   stage.style.setProperty('--card-height',cardHeight+'px');
   stage.style.setProperty('--digit-size',digitSize+'px');
-  stage.style.setProperty('--sign-size',signSize+'px');
+  const signStyle=getComputedStyle(signs);
+  const landscapeSize=prohibitionGeometry({width,height,size:Math.min(width,height),left:parseFloat(signStyle.paddingLeft)||0,right:parseFloat(signStyle.paddingRight)||0,top:parseFloat(signStyle.paddingTop)||0,bottom:parseFloat(signStyle.paddingBottom)||0,gap:parseFloat(signStyle.columnGap)||6}).size;
+  stage.style.setProperty('--sign-size',(layout.portrait?signSize:Math.floor(landscapeSize))+'px');
   Object.assign(toggle.style,{left:'0px',top:height/2+'px',width:width/2+'px',height:height/2+'px'});
   extras.resize();
   prohibitions.resize();
@@ -93,7 +95,7 @@ function renderGraphic(view) {
     signs.setAttribute('aria-label',graphics[view].map(item=>item[1]).join('. '));
   }
   signs.dataset.content = view;
-  if(view==='rules'&&layout.portrait)prepareProhibitions();
+  if(view==='rules')prepareProhibitions();
   brightness.attach(signs);
 }
 function prepareProhibitions(){prohibitions.prepare([...signs.querySelectorAll('img')]);}
@@ -133,15 +135,15 @@ controller = new DisplayController({continuous:()=>layout.portrait,effects:{
     if(view==='belts')brightness.close();
     const revision=++visualRevision;
     const target = view==='clock' ? 'clock' : 'signs';
-    const rollingEntry=layout.portrait&&view==='rules'&&animate;
-    const mechanical=animate&&!(layout.portrait&&(view==='rules'||currentView==='rules'));
+    const rollingEntry=view==='rules'&&animate;
+    const mechanical=animate&&view!=='rules'&&!(layout.portrait&&currentView==='rules');
     const changed = currentView!==view || (view==='belts'&&!!signs.querySelector('.confirmation-blackout'));
     currentView = view;
     toggle.setAttribute('aria-label',view==='clock' || view==='rules' || view==='extras' ? 'Nowy pasażer — pokaż przypomnienie o pasach' : 'Pasażer zapiął pasy — potwierdź');
     const reveal=async()=>{
       let rolling=null;
       transition.show(target,{animate:mechanical,force:changed,prepare:()=>{if(target==='signs')renderGraphic(view);if(rollingEntry)rolling=prohibitions.play('enter');}});
-      if(layout.portrait&&view==='rules'&&!animate){prepareProhibitions();prohibitions.rest();}
+      if(view==='rules'&&!animate){prepareProhibitions();prohibitions.rest();}
       await transition.whenFinished();
       if(rolling)await rolling;
     };
@@ -186,8 +188,7 @@ bindHoldControl(brightnessToggle,{onTap:()=>brightness.open(),onHold:()=>{bright
 layoutToggle.addEventListener('click',()=>{
   if(!started)return;
   brightness.close();layout.toggle(transition);layoutToggle.setAttribute('aria-pressed',String(layout.portrait));fitViewport();
-  if(!layout.portrait)prohibitions.finish(true);
-  else if(currentView==='rules'&&!prohibitions.pending){prepareProhibitions();prohibitions.rest();}
+  if(currentView==='rules'&&!prohibitions.pending){prepareProhibitions();prohibitions.rest();}
   if(layout.portrait&&!document.hidden&&!suspended&&!clock.running)clock.start();
   else if(!layout.portrait&&currentView!=='clock')settleClock();
   controller.layoutChanged();
@@ -231,7 +232,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.9.2'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.9.3'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

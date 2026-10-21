@@ -1,7 +1,7 @@
-// Zapnij Pasy vGPT_2.9.2 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.9.2';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.9.2';
-import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.9.2';
+// Zapnij Pasy vGPT_2.9.3 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.9.3';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.9.3';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.9.3';
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false }) {
     this.effects = effects;
@@ -78,7 +78,7 @@ export class DisplayController {
     return true;
   }
   finishPair(){
-    if(this.continuous()&&this.state.pair===0&&this.effects.departRules)return this.departRules();
+    if(this.state.pair===0&&this.effects.departRules)return this.departRules();
     return this.restoreClock();
   }
   async departRules({startedAt=this.now()}={}){
@@ -180,7 +180,7 @@ export class DisplayController {
       if(!await this.reveal('extras',token,false))return;
       return this.runExtras(token);
     }
-    if(saved.kind==='GRAPHIC_PAIR_VISIBLE'&&saved.phase==='exit'&&saved.deadline>this.now()&&this.continuous()){
+    if(saved.kind==='GRAPHIC_PAIR_VISIBLE'&&saved.phase==='exit'&&saved.deadline>this.now()){
       const token=this.enter(saved);if(!await this.reveal('rules',token,false))return;
       return this.departRules({startedAt:saved.startedAt});
     }

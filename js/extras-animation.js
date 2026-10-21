@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.9.2 — one cancellable camera/rolling-piggy timeline.
+// Zapnij Pasy vGPT_2.9.3 — one cancellable camera/rolling-piggy timeline.
 export const EXTRAS_DURATION=60000;
 export const EXTRAS_STEPS=Object.freeze([
  {name:'camera-enter',start:0,end:4000},{name:'camera-visible',start:4000,end:34000},
@@ -18,9 +18,9 @@ export class ExtrasAnimation {
  constructor(host,{reducedMotion=()=>false,now=()=>Date.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id),measure}={}) {
   this.host=host;this.reducedMotion=reducedMotion;this.now=now;this.schedule=schedule;this.cancelTimer=cancel;this.pending=null;this.startedAt=0;
   this.measure=measure||(()=>{
-   const rect=host.getBoundingClientRect(),style=getComputedStyle(host),portrait=host.closest('.stage')?.dataset.layout==='portrait';
-   return {width:rect.width,height:rect.height,size:portrait?Math.min(rect.width,rect.height):parseFloat(style.getPropertyValue('--sign-size'))||Math.min(rect.height-20,(rect.width-36)/2),
-    ...(portrait?{marginX:Math.max(parseFloat(style.paddingLeft)||0,parseFloat(style.paddingRight)||0),marginY:Math.max(parseFloat(style.paddingTop)||0,parseFloat(style.paddingBottom)||0)}:{})};
+   const rect=host.getBoundingClientRect(),style=getComputedStyle(host);
+   return {width:rect.width,height:rect.height,size:Math.min(rect.width,rect.height),
+    marginX:Math.max(parseFloat(style.paddingLeft)||0,parseFloat(style.paddingRight)||0),marginY:Math.max(parseFloat(style.paddingTop)||0,parseFloat(style.paddingBottom)||0)};
   });
   host.addEventListener('animationend',event=>{
    if(this.pending&&event.target===this.host.querySelector('.extras-piggy')&&['extras-piggy-travel','extras-piggy-reduced'].includes(event.animationName)&&this.now()-this.startedAt>=EXTRAS_DURATION-32)this.finish(true);

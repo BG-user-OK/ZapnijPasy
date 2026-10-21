@@ -1,6 +1,6 @@
-# Zapnij Pasy — vGPT_2.9.2
+# Zapnij Pasy — vGPT_2.9.3
 
-Portrait signs now use the available upper region: two equally enlarged prohibitions with a narrow gap, and individually maximized camera/piggy circles. Original graphics, landscape sizes, lower clock and all animation timings remain unchanged.
+Landscape round signs now use the available screen: equal paired signs with a 6 px gap and at least 4 px safe margins, individually maximized camera/piggy circles. Red prohibitions roll in from the left over 4 s, hold upright for 60 s after arrival, then roll out to the right over 4 s. The current clock returns through the existing mechanical flaps from the empty black scene. Portrait behavior, original graphics, passenger/confirmation timings and native pilot remain unchanged.
 
 
 ## Portrait split display
@@ -42,13 +42,13 @@ The time flaps use one rigid double-sided leaf over 800 ms. Whole-view transitio
 
 All active display graphics and installation icons are organized under Grafiki/. Non-piggy sign rings share a thinner consistent width; both prohibition slashes match. The piggy image and buckle mechanism retain their approved appearance.
 
-PWA vGPT_2.9.2: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
+PWA vGPT_2.9.3: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
 
-Visual correction vGPT_2.9.2: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
+Visual correction vGPT_2.9.3: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
 
-PWA vGPT_2.9.2: fixed left-person/right-buckle passenger layout; no alternating belt screens. Only the right tongue repeats. Confirmation, clock/message cycle, assets and pilot vGPT_2.3.0 remain unchanged.
+PWA vGPT_2.9.3: fixed left-person/right-buckle passenger layout; no alternating belt screens. Only the right tongue repeats. Confirmation, clock/message cycle, assets and pilot vGPT_2.3.0 remain unchanged.
 
-PWA vGPT_2.9.2 replaces the simultaneous camera/piggy pair: camera 4 s entrance + 30 s fully visible downward movement + 4 s exit, black 3 s, rolling piggy 4 s entrance + 11 s upright hold + 4 s exit. Original assets and piggy size preserved. Resume uses elapsed time; passenger commands cancel the scene. Other behavior and Android vGPT_2.3.0 unchanged.
+PWA vGPT_2.9.3 replaces the simultaneous camera/piggy pair: camera 4 s entrance + 30 s fully visible downward movement + 4 s exit, black 3 s, rolling piggy 4 s entrance + 11 s upright hold + 4 s exit. Original assets and piggy size preserved. Resume uses elapsed time; passenger commands cancel the scene. Other behavior and Android vGPT_2.3.0 unchanged.
 
 Completed camera/piggy scenes stop all travel animation and retain the final black frame before clock flap snapshots, including timer fallback and expired resume. This prevents cloned icons from replaying during the clock return.
 

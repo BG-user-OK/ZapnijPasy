@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.9.2 — two signs rolling as a spaced convoy, portrait only.
+// Zapnij Pasy vGPT_2.9.3 — two signs rolling as a spaced convoy in either layout.
 export const PROHIBITION_ROLL_DURATION=4000;
 export function prohibitionGeometry({width,height,size,left=12,right=12,top=10,bottom=10,gap=12}){
   const cell=Math.max(1,(width-left-right-gap)/2),diameter=Math.max(1,Math.min(size,cell,height-top-bottom));
@@ -8,7 +8,7 @@ export function prohibitionGeometry({width,height,size,left=12,right=12,top=10,b
 export class ProhibitionAnimation{
   constructor(host,{reducedMotion=()=>false,now=()=>Date.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id),measure}={}){
     Object.assign(this,{host,reducedMotion,now,schedule,cancelTimer:cancel});this.pending=null;
-    this.measure=measure||(()=>{const r=host.getBoundingClientRect(),s=getComputedStyle(host),portrait=host.closest('.stage')?.dataset.layout==='portrait';return {width:r.width,height:r.height,size:portrait?Math.min(r.width,r.height):parseFloat(s.getPropertyValue('--sign-size'))||1,left:parseFloat(s.paddingLeft)||0,right:parseFloat(s.paddingRight)||0,top:parseFloat(s.paddingTop)||0,bottom:parseFloat(s.paddingBottom)||0,gap:parseFloat(s.columnGap)||12};});
+    this.measure=measure||(()=>{const r=host.getBoundingClientRect(),s=getComputedStyle(host);return {width:r.width,height:r.height,size:Math.min(r.width,r.height),left:parseFloat(s.paddingLeft)||0,right:parseFloat(s.paddingRight)||0,top:parseFloat(s.paddingTop)||0,bottom:parseFloat(s.paddingBottom)||0,gap:parseFloat(s.columnGap)||12};});
     host.addEventListener('animationend',e=>{const p=this.pending;if(p&&e.target===this.track&&e.animationName==='prohibition-travel'&&this.now()>=p.deadline-32)this.finish(true);});
   }
   prepare(images){
