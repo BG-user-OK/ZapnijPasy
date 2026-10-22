@@ -1,16 +1,18 @@
-// Zapnij Pasy vGPT_2.9.3
-import { Flap } from './flap.js?v=vGPT_2.9.3';
-import { Clock } from './clock.js?v=vGPT_2.9.3';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.9.3';
-import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.9.3';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.9.3';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.9.3';
-import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.9.3';
-import { DisplayController } from './display-controller.js?v=vGPT_2.9.3';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.9.3';
-import { startUpdates } from './updates.js?v=vGPT_2.9.3';
-import { BrightnessControl } from './brightness.js?v=vGPT_2.9.3';
-import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.9.3';
+// Zapnij Pasy vGPT_2.11.0
+import { Flap } from './flap.js?v=vGPT_2.11.0';
+import { Clock } from './clock.js?v=vGPT_2.11.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.11.0';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.11.0';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.11.0';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.11.0';
+import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.11.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.11.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.11.0';
+import { startUpdates } from './updates.js?v=vGPT_2.11.0';
+import { BrightnessControl } from './brightness.js?v=vGPT_2.11.0';
+import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.11.0';
+import { DateFlap } from './date-flap.js?v=vGPT_2.11.0';
+import { SceneBlackout } from './scene-blackout.js?v=vGPT_2.11.0';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -18,6 +20,7 @@ const signs = stage.querySelector('.signs');
 const toggle = stage.querySelector('.mode-toggle');
 const brightnessToggle = stage.querySelector('.brightness-toggle');
 const layoutToggle = stage.querySelector('.layout-toggle');
+const clockOnlyToggle = stage.querySelector('.clock-only-toggle');
 let layoutStorage=null;try{layoutStorage=window.localStorage;}catch{/* Device-local preference is optional. */}
 const layout = new DisplayLayout({stage,clock:root,signs,document,storage:layoutStorage});
 const brightness = new BrightnessControl();
@@ -25,6 +28,9 @@ brightness.attach(root);
 brightness.attach(signs);
 const modules = Array.from(root.querySelectorAll('.digit'), element => new Flap(element));
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const dateFlap = new DateFlap(layout.blank,{reducedMotion:()=>reducedMotion.matches});
+brightness.attach(layout.blank);
+const blackout = new SceneBlackout(stage,{reducedMotion:()=>reducedMotion.matches});
 const UPDATE_STATE = 'zapnij-pasy-update-sequence-v1';
 const graphics = {
   rules:[['no-smoking-vaping','Zakaz palenia'],['no-food-drink','Zakaz jedzenia i picia']]
@@ -58,6 +64,7 @@ function fitViewport() {
   Object.assign(toggle.style,{left:'0px',top:height/2+'px',width:width/2+'px',height:height/2+'px'});
   extras.resize();
   prohibitions.resize();
+  dateFlap.resize();
 }
 function image(name, alt = '') {
   const element = document.createElement('img');
@@ -73,7 +80,9 @@ function renderGraphic(view) {
   buckle.stop(false);
   buckle.stopReminder();
   signs.replaceChildren();
-  if(view==='extras'){
+  if(view==='black'){
+    signs.setAttribute('aria-label','');
+  } else if(view==='extras'){
     extras.prepare();extras.resize();
     signs.setAttribute('aria-label','Monitoring, następnie skarbonka na napiwki');
   } else if (view === 'belts') {
@@ -102,6 +111,7 @@ function prepareProhibitions(){prohibitions.prepare([...signs.querySelectorAll('
 const clock = new Clock({update(time,{animate}) {
   modules.forEach((module,index)=>module.setValue(time.digits[index],{animate:animate && !reducedMotion.matches}));
   root.setAttribute('aria-label',time.text);
+  if(controller?.clockOnly&&layout.portrait)dateFlap.refresh({animate});
   controller?.onClockMinute(time,{natural:animate,completed:Promise.all(modules.map(module=>module.whenFinished()))});
 }});
 function settleClock() { clock.stop(); modules.forEach(module=>module.finish()); }
@@ -122,6 +132,8 @@ function cancelVisuals(completeInsertion=false) {
   interrupting = true;
   ++visualRevision;
   transition.finish();
+  blackout.freezeInto(transition.views[transition.mode]);
+  dateFlap.cancel();
   prohibitions.cancel();
   extras.cancel();
   confirmation.cancel({preserveBlack:true});
@@ -130,28 +142,44 @@ function cancelVisuals(completeInsertion=false) {
   if(!layout.portrait||document.hidden||suspended)settleClock();
   interrupting = false;
 }
-controller = new DisplayController({continuous:()=>layout.portrait,effects:{
+controller = new DisplayController({continuous:()=>layout.portrait,storage:layoutStorage,effects:{
+  clockOnly:value=>clockOnlyToggle.setAttribute('aria-pressed',String(value)),
+  async fadeToBlack({animate}){
+    brightness.close();const revision=++visualRevision;
+    const completed=await blackout.play({animate});
+    if(revision!==visualRevision||!completed)return false;
+    transition.show('signs',{animate:false,force:true,prepare:()=>{renderGraphic('black');dateFlap.hide();}});
+    currentView='black';blackout.clear();return true;
+  },
   async show(view,{animate}) {
     if(view==='belts')brightness.close();
     const revision=++visualRevision;
-    const target = view==='clock' ? 'clock' : 'signs';
+    const target = view==='clock'||view==='solo' ? 'clock' : 'signs';
     const rollingEntry=view==='rules'&&animate;
-    const mechanical=animate&&view!=='rules'&&!(layout.portrait&&currentView==='rules');
-    const changed = currentView!==view || (view==='belts'&&!!signs.querySelector('.confirmation-blackout'));
+    const mechanical=animate&&view!=='rules'&&!(layout.portrait&&(currentView==='rules'||view==='solo'));
+    const changed = currentView!==view || view==='solo' || (view==='belts'&&!!signs.querySelector('.confirmation-blackout'));
     currentView = view;
-    toggle.setAttribute('aria-label',view==='clock' || view==='rules' || view==='extras' ? 'Nowy pasażer — pokaż przypomnienie o pasach' : 'Pasażer zapiął pasy — potwierdź');
+    toggle.setAttribute('aria-label',view==='clock' || view==='solo' || view==='rules' || view==='extras' ? 'Nowy pasażer — pokaż przypomnienie o pasach' : 'Pasażer zapiął pasy — potwierdź');
     const reveal=async()=>{
-      let rolling=null;
-      transition.show(target,{animate:mechanical,force:changed,prepare:()=>{if(target==='signs')renderGraphic(view);if(rollingEntry)rolling=prohibitions.play('enter');}});
+      let rolling=null,dateReady=null;
+      transition.show(target,{animate:mechanical,force:changed,prepare:()=>{
+        for(const surface of [root,signs,layout.blank])surface.querySelectorAll('.scene-frozen-blackout').forEach(node=>node.remove());
+        if(view==='solo'&&layout.portrait)dateReady=dateFlap.show({animate});else dateFlap.hide();
+        if(target==='signs')renderGraphic(view);if(rollingEntry)rolling=prohibitions.play('enter');
+      }});
       if(view==='rules'&&!animate){prepareProhibitions();prohibitions.rest();}
       await transition.whenFinished();
       if(rolling)await rolling;
+      if(dateReady)await dateReady;
     };
     await reveal();
     if(revision!==visualRevision)return;
     if(view==='clock'&&currentView==='clock'){
       confirmation.cancel();
       if(!document.hidden&&!suspended&&!interrupting)clock.start();
+    }
+    if(view==='solo'&&currentView==='solo'){
+      confirmation.cancel();if(!document.hidden&&!suspended&&!interrupting&&!clock.running)clock.start();
     }
     if(layout.portrait&&!document.hidden&&!suspended&&!interrupting&&!clock.running)clock.start();
   },
@@ -165,6 +193,7 @@ controller = new DisplayController({continuous:()=>layout.portrait,effects:{
   cancel:()=>cancelVisuals(false),
   idle:()=>{remote?.clockRestored();checkForUpdates();}
 }});
+clockOnlyToggle.setAttribute('aria-pressed',String(controller.clockOnly));
 function suspend() {
   brightness.suspend();
   remote?.suspend();
@@ -180,17 +209,19 @@ function resume() {
   fitViewport();
   if(started) {
     if(controller.suspended) controller.resume();
-    else if((layout.portrait||currentView==='clock') && !transition.busy && !clock.running) clock.start();
+    else if((layout.portrait||currentView==='clock'||currentView==='solo') && !transition.busy && !clock.running) clock.start();
   }
 }
 bindHoldControl(toggle,{onTap:()=>{if(remote)remote.localTap();else if(controller.tap())++fallbackInteractions;},onHold:()=>loadRemote({show:true})});
 bindHoldControl(brightnessToggle,{onTap:()=>brightness.open(),onHold:()=>{brightness.close();loadRemote({show:true});}});
+bindHoldControl(clockOnlyToggle,{onTap:()=>{if(!started)return;if(remote)remote.localClockOnly();else if(controller.enterClockOnly())++fallbackInteractions;}});
 layoutToggle.addEventListener('click',()=>{
   if(!started)return;
   brightness.close();layout.toggle(transition);layoutToggle.setAttribute('aria-pressed',String(layout.portrait));fitViewport();
   if(currentView==='rules'&&!prohibitions.pending){prepareProhibitions();prohibitions.rest();}
   if(layout.portrait&&!document.hidden&&!suspended&&!clock.running)clock.start();
-  else if(!layout.portrait&&currentView!=='clock')settleClock();
+  else if(!layout.portrait&&currentView!=='clock'&&currentView!=='solo')settleClock();
+  if(!layout.portrait)dateFlap.hide();
   controller.layoutChanged();
 });
 window.addEventListener('resize',fitViewport);
@@ -201,7 +232,7 @@ window.addEventListener('pageshow',resume);
 window.addEventListener('pagehide',suspend);
 window.addEventListener('focus',resume);
 document.addEventListener('visibilitychange',()=>document.hidden ? suspend() : resume());
-reducedMotion.addEventListener('change',()=>{extras.updateMotion();prohibitions.updateMotion();if(reducedMotion.matches){modules.forEach(module=>module.finish());transition.finish();if(signs.classList.contains('is-inserting')||signs.classList.contains('is-retracting'))buckle.stop(signs.classList.contains('is-inserting'));}});
+reducedMotion.addEventListener('change',()=>{extras.updateMotion();prohibitions.updateMotion();if(reducedMotion.matches){modules.forEach(module=>module.finish());dateFlap.cancel();blackout.finish(true);transition.finish();if(signs.classList.contains('is-inserting')||signs.classList.contains('is-retracting'))buckle.stop(signs.classList.contains('is-inserting'));}});
 fitViewport();
 clock.start();
 if(document.hidden)brightness.suspend();else brightness.requestLocation();
@@ -217,13 +248,14 @@ Promise.all(requiredAssets.map(name=>new Promise((resolve,reject)=>{
   started = true;
   toggle.disabled = false;
   layoutToggle.disabled = false;
-  if(document.hidden) { controller.nextPair=saved.nextPair===1 ? 1 : 0; controller.state={kind:'CLOCK_WAITING_FOR_MINUTE'}; controller.suspend(); }
+  clockOnlyToggle.disabled = false;
+  if(document.hidden) { controller.nextPair=saved.nextPair===1 ? 1 : 0; controller.state={kind:controller.clockOnly?'CLOCK_ONLY':'CLOCK_WAITING_FOR_MINUTE'}; controller.suspend(); }
   // Pairing must be able to interrupt the first rolling entrance, without waiting for it.
   else controller.start(saved || {}).catch(error=>console.warn(error.message));
   try{if(localStorage.getItem('zapnij-pasy-remote-pair-v1'))loadRemote();}catch{/* Local clock remains available. */}
 }).catch(error=>console.warn(error.message));
 checkForUpdates = startUpdates({
-  isBusy:()=>transition.busy || modules.some(module=>module.pending!==undefined),
+  isBusy:()=>transition.busy || blackout.busy || dateFlap.busy || modules.some(module=>module.pending!==undefined),
   deferReload:()=>!controller.safeToReload || !brightness.panel.hidden,
   beforeReload:()=>{try{sessionStorage.setItem(UPDATE_STATE,JSON.stringify(controller.snapshot()));}catch{} suspend();}
 }) || (()=>{});
@@ -232,7 +264,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.9.3'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.11.0'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

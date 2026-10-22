@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.9.3 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.11.0 — optional display-side communication; the clock starts independently.
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';
 import {DisplayReceiver} from './display-receiver.js';
@@ -50,6 +50,8 @@ export class RemoteDisplay {
   hide(){this.panel.hidden=true;document.querySelector('.mode-toggle')?.focus();}
   async initialize(){if(this.pair&&!this.hidden){this.recovering=true;try{await this.applySaved();}finally{this.recovering=false;}await this.run(()=>this.connect());}}
   async applySaved() {
+    // The local clock-only choice supersedes an old persisted passenger scene, not a fresh command.
+    if(this.controller.clockOnly){this.protocol.restoreClock();return;}
     const state=this.protocol.snapshot();
     if(state.mode==='PASSENGER') {
       if(this.controller.state.kind!=='PASSENGER')await this.controller.startPassenger({animate:false});
@@ -127,6 +129,13 @@ export class RemoteDisplay {
   localTap() {
     if(!this.controller.tap())return false;
     try{this.protocol.localTap(this.link?.now()||Date.now());this.publish();}
+    catch{this.storageFailed=true;this.ready=false;this.receiver?.suspend();this.link?.pause();this.message(this.errorText({code:'STORAGE_UNAVAILABLE'}));}
+    return true;
+  }
+  localClockOnly(){
+    if(this.controller.suspended||this.controller.clockOnly)return false;
+    this.controller.enterClockOnly();
+    try{this.protocol.restoreClock();this.publish();}
     catch{this.storageFailed=true;this.ready=false;this.receiver?.suspend();this.link?.pause();this.message(this.errorText({code:'STORAGE_UNAVAILABLE'}));}
     return true;
   }

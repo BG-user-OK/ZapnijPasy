@@ -1,9 +1,10 @@
-// Zapnij Pasy vGPT_2.9.3 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.9.3';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.9.3';
-import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.9.3';
+// Zapnij Pasy vGPT_2.11.0 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.11.0';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.11.0';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.11.0';
+export const CLOCK_ONLY_KEY='zapnij-pasy-clock-only-v1';
 export class DisplayController {
-  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false }) {
+  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, storage = null }) {
     this.effects = effects;
     this.now = now;
     this.schedule = schedule;
@@ -15,6 +16,8 @@ export class DisplayController {
     this.suspended = false;
     this.lastTap = null;
     this.continuous=continuous;
+    this.storage=storage;this.clockOnly=false;
+    try{this.clockOnly=storage?.getItem(CLOCK_ONLY_KEY)==='true';}catch{/* Local operation remains available. */}
   }
   invalidate() {
     ++this.token;
@@ -41,9 +44,39 @@ export class DisplayController {
   start({ nextPair = 0 } = {}) {
     this.nextPair = nextPair === 1 ? 1 : 0;
     this.suspended = false;
+    if(this.clockOnly)return this.restoreClockOnly(false);
     return this.restoreClock(this.continuous());
   }
+  setClockOnly(value){
+    this.clockOnly=value;
+    try{this.storage?.setItem(CLOCK_ONLY_KEY,String(value));}catch{/* A refused preference cannot disable the clock. */}
+    this.effects.clockOnly?.(value);
+  }
+  enterClockOnly({animate=true}={}){
+    if(this.suspended||this.clockOnly&&this.state.kind==='CLOCK_ONLY')return false;
+    this.setClockOnly(true);
+    const token=this.enter({kind:'CLOCK_ONLY',phase:'fade'});
+    this.effects.cancel();
+    return (async()=>{
+      const cleared=await this.effects.fadeToBlack?.({animate});
+      if(!this.valid(token)||cleared===false)return;
+      this.state.phase='transition';
+      if(!await this.reveal('solo',token,animate))return;
+      this.finishClockOnly();
+    })();
+  }
+  async restoreClockOnly(animate=false){
+    const token=this.enter({kind:'CLOCK_ONLY',phase:'transition'});
+    if(!await this.reveal('solo',token,animate))return;
+    this.finishClockOnly();
+  }
+  finishClockOnly(){
+    this.state.phase='hold';
+    if(this.clockOnlyLayoutPending){this.clockOnlyLayoutPending=false;return this.restoreClockOnly(false);}
+    this.effects.idle?.();
+  }
   async restoreClock(animate = true) {
+    if(this.clockOnly)return this.restoreClockOnly(animate);
     if(this.continuous()){
       if(await this.showPair(this.nextPair,{animate}))this.effects.idle?.();
       return;
@@ -54,7 +87,7 @@ export class DisplayController {
     this.effects.idle?.();
   }
   onClockMinute(time, { natural = false, completed = Promise.resolve() } = {}) {
-    if(this.continuous())return;
+    if(this.clockOnly||this.continuous())return;
     if (this.suspended || this.state.kind !== 'CLOCK_WAITING_FOR_MINUTE') return;
     if (!natural) { this.state.minute = time.minute; return; }
     if (time.minute <= this.state.minute) return;
@@ -66,6 +99,7 @@ export class DisplayController {
     });
   }
   async showPair(pair,{animate=true}={}) {
+    if(this.clockOnly)return false;
     const token = this.enter({kind:'GRAPHIC_PAIR_VISIBLE', phase:'transition', pair});
     if (!await this.reveal(pair === 0 ? 'rules' : 'extras', token,animate)) return false;
     this.nextPair = pair === 0 ? 1 : 0;
@@ -87,6 +121,7 @@ export class DisplayController {
     if(this.valid(token)&&completed!==false)return this.restoreClock();
   }
   layoutChanged(){
+    if(this.clockOnly){if(!this.suspended&&this.state.phase==='hold')return this.restoreClockOnly(false);this.clockOnlyLayoutPending=true;return;}
     if(!this.suspended&&this.continuous()&&this.state.kind.startsWith('CLOCK'))return this.restoreClock(true);
   }
   async runExtras(token) {
@@ -104,6 +139,7 @@ export class DisplayController {
     return true;
   }
   startPassenger({animate = true} = {}) {
+    this.clockOnlyLayoutPending=false;this.setClockOnly(false);
     this.enter({kind:'PASSENGER', phase:'interrupt'});
     this.nextPair = 0;
     this.effects.cancel();
@@ -165,6 +201,7 @@ export class DisplayController {
   async resume() {
     if (!this.suspended) return;
     this.suspended = false;
+    if(this.clockOnly)return this.restoreClockOnly(false);
     const saved = {...this.state};
     if (saved.kind === 'PASSENGER') return this.startPassenger({animate:false});
     if (saved.kind === 'PASSENGER_CONFIRMED_WAIT') {
@@ -199,5 +236,5 @@ export class DisplayController {
     return this.restoreClock(false);
   }
   snapshot() { return {nextPair:this.nextPair}; }
-  get safeToReload() { return !this.suspended && (this.state.kind === 'CLOCK_WAITING_FOR_MINUTE'||(this.continuous()&&this.state.kind==='GRAPHIC_PAIR_VISIBLE'&&this.state.pair===0&&this.state.phase==='hold')); }
+  get safeToReload() { return !this.suspended && (this.state.kind==='CLOCK_ONLY'&&this.state.phase==='hold'||this.state.kind === 'CLOCK_WAITING_FOR_MINUTE'||(this.continuous()&&this.state.kind==='GRAPHIC_PAIR_VISIBLE'&&this.state.pair===0&&this.state.phase==='hold')); }
 }

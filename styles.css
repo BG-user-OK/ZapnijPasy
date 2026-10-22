@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.9.3 */
+/* Zapnij Pasy vGPT_2.11.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -156,6 +156,20 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .layout-toggle{position:absolute;z-index:31;left:50%;top:0;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
 .layout-toggle:focus{outline:none}
 .layout-toggle:focus-visible{outline:1px solid #8a8d88;outline-offset:-3px}
+.clock-only-toggle{position:absolute;z-index:31;left:50%;top:50%;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
+.clock-only-toggle:focus{outline:none}
+.clock-only-toggle:focus-visible{outline:1px solid #8a8d88;outline-offset:-3px}
+.signs[data-content="black"]{background:#000}
+.stage[data-layout="portrait"] .blank-view{height:50%;bottom:auto;display:flex;align-items:center;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.stage[data-layout="portrait"][data-mode="clock"] > .blank-view[data-date-active="true"]{visibility:visible}
+.snapshot-viewport > .blank-view{visibility:visible!important}
+.date-flap{width:100%;perspective-origin:50% 50%}
+.date-flap .face-content{font-size:var(--date-font-size,32px);letter-spacing:0;text-align:center}
+.date-flap .face-content > .date-text{display:flex;flex-direction:column;align-items:center;gap:.14em;line-height:1.1;transform:none;white-space:nowrap}
+.scene-blackout{position:absolute;inset:0;z-index:25;pointer-events:none;background:#000;animation:scene-to-black var(--scene-fade-duration,600ms) ease-in-out both}
+.stage[data-layout="portrait"] > .scene-blackout{height:50%;bottom:auto}
+.scene-frozen-blackout{position:absolute;inset:0;z-index:12;pointer-events:none;background:#000}
+@keyframes scene-to-black{from{opacity:0}to{opacity:1}}
 .stage[data-layout="portrait"] > .signs{height:50%;bottom:auto;overflow:hidden}
 .stage[data-layout="portrait"] > .signs[data-content="rules"],
 .stage[data-layout="portrait"] > .signs[data-content="extras"]{padding:max(4px,env(safe-area-inset-top)) max(4px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left));column-gap:6px}
