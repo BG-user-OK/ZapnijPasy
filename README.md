@@ -1,4 +1,4 @@
-# Zapnij Pasy — vGPT_2.11.0
+# Zapnij Pasy — vGPT_2.12.0
 
 Landscape round signs now use the available screen: equal paired signs with a 6 px gap and at least 4 px safe margins, individually maximized camera/piggy circles. Red prohibitions roll in from the left over 4 s, hold upright for 60 s after arrival, then roll out to the right over 4 s. The current clock returns through the existing mechanical flaps from the empty black scene. Portrait behavior, original graphics, passenger/confirmation timings and native pilot remain unchanged.
 
@@ -42,13 +42,13 @@ The time flaps use one rigid double-sided leaf over 800 ms. Whole-view transitio
 
 All active display graphics and installation icons are organized under Grafiki/. Non-piggy sign rings share a thinner consistent width; both prohibition slashes match. The piggy image and buckle mechanism retain their approved appearance.
 
-PWA vGPT_2.11.0: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
+PWA vGPT_2.12.0: confirmation draws synchronized green checks, holds 3 s, shows one golden thumbs-up with three growths, holds 4 s, fades and immediately restores the clock through the mechanical flaps. Existing pilot vGPT_2.3.0 needs no update.
 
-Visual correction vGPT_2.11.0: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
+Visual correction vGPT_2.12.0: dark green, thicker marker checks; the thumbs-up is a transparent overlay over the unchanged belt graphics and completed checks throughout the animation. Only the thumb fades; clock restoration and all timings are unchanged.
 
-PWA vGPT_2.11.0: fixed left-person/right-buckle passenger layout; no alternating belt screens. Only the right tongue repeats. Confirmation, clock/message cycle, assets and pilot vGPT_2.3.0 remain unchanged.
+PWA vGPT_2.12.0: fixed left-person/right-buckle passenger layout; no alternating belt screens. Only the right tongue repeats. Confirmation, clock/message cycle, assets and pilot vGPT_2.3.0 remain unchanged.
 
-PWA vGPT_2.11.0 replaces the simultaneous camera/piggy pair: camera 4 s entrance + 30 s fully visible downward movement + 4 s exit, black 3 s, rolling piggy 4 s entrance + 11 s upright hold + 4 s exit. Original assets and piggy size preserved. Resume uses elapsed time; passenger commands cancel the scene. Other behavior and Android vGPT_2.3.0 unchanged.
+PWA vGPT_2.12.0 replaces the simultaneous camera/piggy pair: camera 4 s entrance + 30 s fully visible downward movement + 4 s exit, black 3 s, rolling piggy 4 s entrance + 11 s upright hold + 4 s exit. Original assets and piggy size preserved. Resume uses elapsed time; passenger commands cancel the scene. Other behavior and Android vGPT_2.3.0 unchanged.
 
 Completed camera/piggy scenes stop all travel animation and retain the final black frame before clock flap snapshots, including timer fallback and expired resume. This prevents cloned icons from replaying during the clock return.
 
@@ -66,3 +66,9 @@ Brightness: upper-left quarter opens six levels (10/20/35/50/75/100%). A choice 
 Solar reference: https://www.gml.noaa.gov/grad/solcalc/calcdetails.html ; independent development checks: https://aa.usno.navy.mil/data/api .
 
 Clock-only driving: tap the lower-right quarter. Current content gently fades to black, then the existing mechanical clock returns. The local choice survives reload/offline reopening until passenger START from the lower-left quarter or Pilot. Portrait shows one wide mechanical date flap above the continuous clock, with Polish weekday and day/full month; the device calendar updates at midnight. Landscape shows only the full clock. Brightness follows the existing profile. No Android update is needed.
+
+## Acoustic passenger control — vGPT_2.12.0
+
+With the updated paired Pilot vGPT_2.5.0, the lower-left quarter requests Pixel listening instead of immediately showing belts. The existing image/clock cycle continues until an actual alarm command arrives. A visible request/receipt notice distinguishes delivery from healthy-microphone acknowledgment. A tap during an active session requests manual STOP; an active local belt scene confirms immediately as before. Clock-only requests microphone STOP too. Unpaired/offline local operation retains manual control. No microphone audio or new GPS is collected by the PWA.
+
+The Pixel owns the four-second healthy quiet threshold and fifteen-second watch from confirmed celebration startup. A renewed tone issues a fresh START to interrupt the existing celebration through the same cancellable display controller. Existing graphics/flaps/brightness/layouts/timings stay unchanged. The new listenRequest/listenState paths are pair-isolated, expiring and server-claimed; stale/reconnected snapshots cannot trigger listening. No public APK hosting. Older historical behavior descriptions above are superseded by this section where they conflict.

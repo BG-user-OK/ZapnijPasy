@@ -1,4 +1,5 @@
-// Zapnij Pasy vGPT_2.11.0 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.12.0 — optional display-side communication; the clock starts independently.
+import {ListeningDisplay} from './listening-display.js';
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';
 import {DisplayReceiver} from './display-receiver.js';
@@ -102,7 +103,7 @@ export class RemoteDisplay {
       this.receiver=receiver;
       const generation=await this.link.armPresence(this.pair.pairId,receiver.view());
       if(this.hidden){receiver.suspend();await this.link.patch('pairs/'+this.pair.pairId+'/display',{online:false});return;}
-      receiver.activate(generation);this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
+      receiver.activate(generation);this.listening?.close();this.listening=new ListeningDisplay({link:this.link,pairId:this.pair.pairId,generation,notify:text=>this.notice(text)});this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
       this.mailboxOff?.();this.mailboxOff=this.link.watch('pairs/'+this.pair.pairId+'/mailbox',command=>{
         if(command?.status==='REQUESTED'&&this.ready&&!this.hidden)this.run(()=>receiver.receive(command.id));
       });
@@ -126,13 +127,26 @@ export class RemoteDisplay {
     this.pair={pairId};write(PAIR_KEY,this.pair);this.approveButton.hidden=true;this.inviteText.hidden=true;
     this.inviteText.value='';this.invitationOff?.();this.invitation=null;await this.arm();
   }
+  notice(text){
+    this.message(text);if(!this.noticeElement){this.noticeElement=document.createElement('div');this.noticeElement.className='remote-notice';this.noticeElement.setAttribute('role','status');document.body.append(this.noticeElement);}
+    this.noticeElement.textContent=text;this.noticeElement.hidden=false;clearTimeout(this.noticeTimer);this.noticeTimer=setTimeout(()=>{this.noticeElement.hidden=true;},6000);
+  }
   localTap() {
+    if(this.pair&&this.ready&&this.listening){
+      const now=Date.now();if(now-(this.lastListeningTap||0)<400)return false;this.lastListeningTap=now;
+      const stop=this.listening.active||this.controller.state.kind==='PASSENGER'||this.controller.state.kind==='PASSENGER_CONFIRMED_WAIT';
+      if(stop&&this.controller.state.kind==='PASSENGER'&&this.controller.tap()){
+        try{this.protocol.localTap(this.link.now());this.publish();}catch{this.notice('Nie udało się przekazać ręcznego zakończenia do Pilota.');}
+      }
+      this.run(()=>this.listening.request(stop?'STOP':'ARM'));return true;
+    }
     if(!this.controller.tap())return false;
     try{this.protocol.localTap(this.link?.now()||Date.now());this.publish();}
     catch{this.storageFailed=true;this.ready=false;this.receiver?.suspend();this.link?.pause();this.message(this.errorText({code:'STORAGE_UNAVAILABLE'}));}
     return true;
   }
   localClockOnly(){
+    if(this.listening?.active)this.run(()=>this.listening.request('STOP'));
     if(this.controller.suspended||this.controller.clockOnly)return false;
     this.controller.enterClockOnly();
     try{this.protocol.restoreClock();this.publish();}
@@ -145,9 +159,10 @@ export class RemoteDisplay {
   publish() {
     if(this.ready&&this.receiver&&this.link&&!this.hidden)this.run(()=>this.link.put('pairs/'+this.pair.pairId+'/display',this.receiver.view()));
   }
-  suspend(){this.hidden=true;this.ready=false;this.receiver?.suspend();this.link?.pause();}
+  suspend(){this.listening?.close();this.listening=null;this.hidden=true;this.ready=false;this.receiver?.suspend();this.link?.pause();}
   resume(){if(!this.hidden)return;this.hidden=false;if(this.link)this.link.resume();if(this.pair)this.run(async()=>{this.recovering=true;try{await this.applySaved();}finally{this.recovering=false;}await this.connect();});}
   async unpair() {
+    this.listening?.close();this.listening=null;
     if(this.pair){await this.ensureLink();await this.link.patch('pairs/'+this.pair.pairId+'/members',{active:false});}
     this.pair=null;localStorage.removeItem(PAIR_KEY);this.ready=false;this.receiver?.suspend();this.receiver=null;this.mailboxOff?.();this.invitationOff?.();
     if(this.link)await this.link.close();this.link=null;this.inviteText.hidden=true;this.inviteText.value='';this.approveButton.hidden=true;

@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.11.0 */
+/* Zapnij Pasy vGPT_2.12.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -279,3 +279,5 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 [data-confirmation="black-hold"] .confirmation-blackout{opacity:1}
 @keyframes confirmation-scene-fade{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.is-flipping.is-settle-enabled .falling-flap,.is-flipping.is-settling .falling-flap{animation:none}.confirmation-blackout{animation:none!important}[data-confirmation="scene-fade"] .confirmation-blackout{opacity:1}}
+
+.remote-notice{position:fixed;z-index:90;bottom:8px;left:8px;right:8px;padding:10px;background:#15191feb;color:#ddd;font:16px sans-serif;text-align:center;pointer-events:none;border-radius:8px}.remote-notice[hidden]{display:none}

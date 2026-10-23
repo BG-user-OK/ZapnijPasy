@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.11.0 — two signs rolling as a spaced convoy in either layout.
+// Zapnij Pasy vGPT_2.12.0 — two signs rolling as a spaced convoy in either layout.
 export const PROHIBITION_ROLL_DURATION=4000;
 export function prohibitionGeometry({width,height,size,left=12,right=12,top=10,bottom=10,gap=12}){
   const cell=Math.max(1,(width-left-right-gap)/2),diameter=Math.max(1,Math.min(size,cell,height-top-bottom));
