@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.12.0 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.13.0 — optional display-side communication; the clock starts independently.
 import {ListeningDisplay} from './listening-display.js';
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';
@@ -8,7 +8,8 @@ const STATE_KEY='zapnij-pasy-remote-state-v1';
 const read=key=>JSON.parse(localStorage.getItem(key)||'null');
 const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
 export class RemoteDisplay {
-  constructor({controller,config,preferLocal=false}) {
+  constructor({controller,config,preferLocal=false,onListeningActive=()=>{}}) {
+    this.onListeningActive=onListeningActive;
     this.controller=controller;this.config=config;this.link=null;this.receiver=null;
     this.connecting=null;this.arming=false;this.ready=false;this.hidden=document.hidden;
     this.pair=read(PAIR_KEY);this.invitation=null;this.status='Pilot nie jest sparowany.';
@@ -44,7 +45,7 @@ export class RemoteDisplay {
       this.button('Utwórz link parowania',()=>this.invite()),
       this.button('Kopiuj link',async()=>{if(this.inviteText.hidden)return;try{await navigator.clipboard.writeText(this.inviteText.value);this.message('Link skopiowany. Otwórz go na telefonie kierowcy.');}catch{this.inviteText.focus();this.inviteText.select();this.message('Zaznaczono link. Skopiuj go ręcznie.');}}),
       this.approveButton,this.button('Sprawdź połączenie',()=>this.connect()),
-      this.button('Odłącz pilota',()=>this.unpair()),this.button('Wróć do zegara',()=>this.hide()),help);
+      this.button('Odłącz pilota',()=>this.unpair()),this.button('Pokaz muzyki TBox',()=>{this.hide();document.dispatchEvent(new Event('zp-music-settings'));}),this.button('Wróć do zegara',()=>this.hide()),help);
     document.body.append(panel);this.panel=panel;
   }
   show(){this.panel.hidden=false;this.message(this.status);this.panel.querySelector('button')?.focus();}
@@ -103,7 +104,7 @@ export class RemoteDisplay {
       this.receiver=receiver;
       const generation=await this.link.armPresence(this.pair.pairId,receiver.view());
       if(this.hidden){receiver.suspend();await this.link.patch('pairs/'+this.pair.pairId+'/display',{online:false});return;}
-      receiver.activate(generation);this.listening?.close();this.listening=new ListeningDisplay({link:this.link,pairId:this.pair.pairId,generation,notify:text=>this.notice(text)});this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
+      receiver.activate(generation);this.listening?.close();this.listening=new ListeningDisplay({link:this.link,pairId:this.pair.pairId,generation,notify:text=>this.notice(text),onActive:()=>this.onListeningActive()});this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
       this.mailboxOff?.();this.mailboxOff=this.link.watch('pairs/'+this.pair.pairId+'/mailbox',command=>{
         if(command?.status==='REQUESTED'&&this.ready&&!this.hidden)this.run(()=>receiver.receive(command.id));
       });

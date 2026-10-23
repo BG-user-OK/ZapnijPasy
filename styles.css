@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.12.0 */
+/* Zapnij Pasy vGPT_2.13.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -281,3 +281,17 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 @media(prefers-reduced-motion:reduce){.is-flipping.is-settle-enabled .falling-flap,.is-flipping.is-settling .falling-flap{animation:none}.confirmation-blackout{animation:none!important}[data-confirmation="scene-fade"] .confirmation-blackout{opacity:1}}
 
 .remote-notice{position:fixed;z-index:90;bottom:8px;left:8px;right:8px;padding:10px;background:#15191feb;color:#ddd;font:16px sans-serif;text-align:center;pointer-events:none;border-radius:8px}.remote-notice[hidden]{display:none}
+
+/* Music stays inside the foreground display; hidden quadrant controls remain above it. */
+.music-slide{position:absolute;inset:0;z-index:26;background:#000;display:flex;align-items:center;justify-content:center;gap:3vw;padding:3vh 3vw;pointer-events:none;overflow:hidden;color:#ddd}
+.music-slide[hidden]{display:none}
+.music-slide>img{display:block;max-width:50%;width:auto;height:92%;max-height:92%;object-fit:contain;flex-shrink:1;min-width:0}
+.music-text{min-width:0;max-width:47%;font-family:system-ui,sans-serif;text-align:left;overflow:hidden}
+.music-title{font-size:clamp(20px,5vw,52px);line-height:1.2;font-weight:650;margin:0 0 16px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.music-artist{font-size:clamp(16px,3vw,32px);line-height:1.25;margin:0;color:#aaa;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.stage[data-layout="portrait"]>.music-slide{height:50%;bottom:auto;gap:1vh;padding:1.5vh 2vw;flex-direction:column}
+.stage[data-layout="portrait"]>.music-slide>img{max-width:94%;height:65%;max-height:65%}
+.stage[data-layout="portrait"] .music-text{max-width:100%;text-align:center;flex-shrink:1}
+.stage[data-layout="portrait"] .music-title{font-size:clamp(16px,5vw,34px);margin:0 0 4px;-webkit-line-clamp:2}
+.stage[data-layout="portrait"] .music-artist{font-size:clamp(14px,3.8vw,24px);-webkit-line-clamp:1}
+.music-settings{z-index:110}.music-settings select{font:inherit;font-size:20px;background:#24272a;color:#ddd;padding:12px;border-radius:5px;margin:8px}

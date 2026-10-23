@@ -7,8 +7,8 @@ export function listeningRequest(action,generation,sessionId,now,id=randomToken(
   return {id,sessionId:action==='ARM'?id:sessionId,action,generation,createdAt:now,expiresAt:now+LISTENING_TTL,status:'REQUESTED'};
 }
 export class ListeningDisplay{
-  constructor({link,pairId,generation,notify=()=>{},onUnavailable=()=>{}}){this.link=link;this.path='pairs/'+pairId;this.generation=generation;this.notify=notify;this.onUnavailable=onUnavailable;this.state=null;this.pending=null;this.timer=null;this.closed=false;
-    this.off=link.watch(this.path+'/listenState',value=>{this.state=value;});
+  constructor({link,pairId,generation,notify=()=>{},onUnavailable=()=>{},onActive=()=>{}}){this.link=link;this.path='pairs/'+pairId;this.generation=generation;this.notify=notify;this.onUnavailable=onUnavailable;this.state=null;this.pending=null;this.timer=null;this.closed=false;
+    this.off=link.watch(this.path+'/listenState',value=>{this.state=value;if(this.active)onActive();});
     this.ackOff=link.watch(this.path+'/listenRequest',value=>{
       if(!this.pending||value?.id!==this.pending.id||!['APPLIED','REJECTED'].includes(value.status))return;
       clearTimeout(this.timer);this.pending=null;
