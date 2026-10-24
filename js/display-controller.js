@@ -1,7 +1,7 @@
-// Zapnij Pasy vGPT_2.13.2 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.13.2';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.13.2';
-import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.13.2';
+// Zapnij Pasy vGPT_2.14.0 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.14.0';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.14.0';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.14.0';
 export const CLOCK_ONLY_KEY='zapnij-pasy-clock-only-v1';
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, storage = null }) {
@@ -63,6 +63,20 @@ export class DisplayController {
       this.state.phase='transition';
       if(!await this.reveal('solo',token,animate))return;
       this.finishClockOnly();
+    })();
+  }
+  toggleClockOnly(options){
+    return this.clockOnly?this.leaveClockOnly(options):this.enterClockOnly(options);
+  }
+  leaveClockOnly({animate=true}={}){
+    if(this.suspended||!this.clockOnly)return false;
+    this.clockOnlyLayoutPending=false;this.setClockOnly(false);
+    const token=this.enter({kind:'NORMAL_RESUMING',phase:'fade'});
+    this.nextPair=0;this.effects.cancel();
+    return (async()=>{
+      const cleared=await this.effects.fadeToBlack?.({animate});
+      if(!this.valid(token)||cleared===false)return;
+      return this.showPair(0,{animate});
     })();
   }
   async restoreClockOnly(animate=false){

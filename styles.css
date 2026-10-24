@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.13.2 */
+/* Zapnij Pasy vGPT_2.14.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -102,7 +102,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .stage[data-mode="signs"] > .signs { visibility:visible; }
 .mode-toggle { position:absolute; z-index:30; margin:0; padding:0; border:0; border-radius:var(--radius); background:transparent; color:transparent; -webkit-appearance:none; appearance:none; -webkit-tap-highlight-color:transparent; touch-action:manipulation; cursor:pointer; }
 .mode-toggle:focus { outline:none; }
-.mode-toggle:focus-visible { outline:1px solid #8a8d88; outline-offset:-3px; }
+.mode-toggle:focus-visible { outline:none; }
 .view-transition { display:none; position:absolute; inset:0; z-index:20; pointer-events:none; perspective:6000px; }
 .view-transition.is-visible { display:block; }
 .transition-panel { position:absolute; top:0; height:50%; transform-origin:center bottom; transform-style:preserve-3d; -webkit-transform-style:preserve-3d; }
@@ -152,13 +152,13 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .signs[data-content="belts"] > .content-dimmer{opacity:0}
 .brightness-toggle{position:absolute;z-index:31;left:0;top:0;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
 .brightness-toggle:focus{outline:none}
-.brightness-toggle:focus-visible{outline:1px solid #8a8d88;outline-offset:-3px}
+.brightness-toggle:focus-visible{outline:none}
 .layout-toggle{position:absolute;z-index:31;left:50%;top:0;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
 .layout-toggle:focus{outline:none}
-.layout-toggle:focus-visible{outline:1px solid #8a8d88;outline-offset:-3px}
+.layout-toggle:focus-visible{outline:none}
 .clock-only-toggle{position:absolute;z-index:31;left:50%;top:50%;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
 .clock-only-toggle:focus{outline:none}
-.clock-only-toggle:focus-visible{outline:1px solid #8a8d88;outline-offset:-3px}
+.clock-only-toggle:focus-visible{outline:none}
 .signs[data-content="black"]{background:#000}
 .stage[data-layout="portrait"] .blank-view{height:50%;bottom:auto;display:flex;align-items:center;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
 .stage[data-layout="portrait"][data-mode="clock"] > .blank-view[data-date-active="true"]{visibility:visible}

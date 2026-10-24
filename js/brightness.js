@@ -1,25 +1,33 @@
-// Zapnij Pasy vGPT_2.13.2 — device-local brightness, coarse location only, no remote writes.
-import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.13.2';
+// Zapnij Pasy vGPT_2.14.0 — device-local brightness, coarse location only, no remote writes.
+import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.14.0';
 export const BRIGHTNESS_LEVELS=Object.freeze([10,20,35,50,75,100]);
 export const BRIGHTNESS_KEY='zapnij-pasy-brightness-v1';
 const GPS_INTERVAL=600000,LOCATION_AGE=86400000;
 export class BrightnessState{
   constructor({now=Date.now,storage=null}={}){
-    this.now=now;this.storage=storage;this.nightLevel=20;this.override=null;this.location=null;
-    try{const saved=JSON.parse(storage?.getItem(BRIGHTNESS_KEY)||'{}');if(BRIGHTNESS_LEVELS.includes(saved.nightLevel))this.nightLevel=saved.nightLevel;if(saved.override&&BRIGHTNESS_LEVELS.includes(saved.override.level)&&Number.isFinite(saved.override.until)&&Number.isFinite(saved.override.startedAt)&&typeof saved.override.night==='boolean'&&saved.override.until>saved.override.startedAt)this.override=saved.override;if(validCoordinates(saved.location)&&Number.isFinite(saved.location.at))this.location={latitude:Math.round(saved.location.latitude*100)/100,longitude:Math.round(saved.location.longitude*100)/100,at:saved.location.at};}catch{/* Storage is optional. */}
+    this.now=now;this.storage=storage;this.dayLevel=100;this.nightLevel=20;this.location=null;
+    try{
+      const saved=JSON.parse(storage?.getItem(BRIGHTNESS_KEY)||'{}');
+      if(BRIGHTNESS_LEVELS.includes(saved.nightLevel))this.nightLevel=saved.nightLevel;
+      if(BRIGHTNESS_LEVELS.includes(saved.dayLevel))this.dayLevel=saved.dayLevel;
+      // Keep the last daytime choice when migrating the former boundary-limited override.
+      else if(saved.version!==2&&saved.override?.night===false&&BRIGHTNESS_LEVELS.includes(saved.override.level))this.dayLevel=saved.override.level;
+      if(validCoordinates(saved.location)&&Number.isFinite(saved.location.at))this.location={latitude:Math.round(saved.location.latitude*100)/100,longitude:Math.round(saved.location.longitude*100)/100,at:saved.location.at};
+      if(saved.version!==2&&(BRIGHTNESS_LEVELS.includes(saved.nightLevel)||saved.override))this.save();
+    }catch{/* Storage is optional. */}
   }
-  save(){try{this.storage?.setItem(BRIGHTNESS_KEY,JSON.stringify({nightLevel:this.nightLevel,override:this.override,location:this.location}));}catch{/* Keep working with memory-only settings. */}}
+  save(){try{this.storage?.setItem(BRIGHTNESS_KEY,JSON.stringify({version:2,dayLevel:this.dayLevel,nightLevel:this.nightLevel,location:this.location}));}catch{/* Keep working with memory-only settings. */}}
   current(){
     const now=this.now(),age=this.location?now-this.location.at:Infinity;
     const useLocation=age>=-60000&&age<=LOCATION_AGE;
     const point=useLocation?this.location:KATOWICE,solar=daylightState(now,point);
     if(this.location&&!useLocation){this.location=null;this.save();}
-    if(this.override&&(now>=this.override.until||now<this.override.startedAt||solar.night!==this.override.night)){this.override=null;this.save();}
-    return {...solar,level:this.override?.level??(solar.night?this.nightLevel:100),nightLevel:this.nightLevel,locationSource:useLocation?'gps':'katowice',locationAge:age,manual:!!this.override};
+    return {...solar,level:solar.night?this.nightLevel:this.dayLevel,dayLevel:this.dayLevel,nightLevel:this.nightLevel,locationSource:useLocation?'gps':'katowice',locationAge:age};
   }
   choose(level){
     if(!BRIGHTNESS_LEVELS.includes(level))throw new TypeError('Invalid brightness level');
-    const solar=this.current();this.nightLevel=level;this.override={level,night:solar.night,startedAt:this.now(),until:solar.nextBoundary};this.save();return this.current();
+    if(this.current().night)this.nightLevel=level;else this.dayLevel=level;
+    this.save();return this.current();
   }
   setLocation(point){
     if(!validCoordinates(point))return false;
@@ -51,7 +59,7 @@ export class BrightnessControl{
     this.cancel(this.timer);this.timer=null;
     const current=this.state.current();this.document.documentElement.style.setProperty('--content-darkness',String((100-current.level)/100));
     for(const button of this.buttons)button.setAttribute('aria-pressed',String(Number(button.dataset.level)===current.level));
-    this.title.textContent='Jasność · '+current.level+'%'+(current.manual?' · ręczna':current.night?' · noc':' · dzień');
+    this.title.textContent='Jasność · '+current.level+'%'+(current.night?' · noc':' · dzień');
     this.status.textContent=current.locationSource==='gps'?(this.gpsError?'Ostatnia lokalizacja GPS':current.locationAge>GPS_INTERVAL?'Ostatnia lokalizacja GPS':'Lokalizacja GPS'):(this.denied?'Katowice · zezwól na lokalizację w przeglądarce':'Katowice · lokalizacja zapasowa');
     if(!this.suspended)this.timer=this.schedule(()=>{this.refresh();this.requestLocation();},Math.max(1,Math.min(60000,current.nextBoundary-this.now())));
     return current;

@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.13.2 — one shared CSS animation start; completes when all actual tongues finish.
+// Zapnij Pasy vGPT_2.14.0 — one shared CSS animation start; completes when all actual tongues finish.
 // The original bitmap remains untouched beneath the two aligned belt strokes.
 export function createSeatBeltSign(image) {
   const sign=document.createElement('div');sign.className='seat-belt-person';

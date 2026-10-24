@@ -1,19 +1,19 @@
-// Zapnij Pasy vGPT_2.13.2
-import { Flap } from './flap.js?v=vGPT_2.13.2';
-import { Clock } from './clock.js?v=vGPT_2.13.2';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.13.2';
-import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.13.2';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.13.2';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.13.2';
-import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.13.2';
-import { DisplayController } from './display-controller.js?v=vGPT_2.13.2';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.13.2';
-import { startUpdates } from './updates.js?v=vGPT_2.13.2';
-import { BrightnessControl } from './brightness.js?v=vGPT_2.13.2';
-import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.13.2';
-import { DateFlap } from './date-flap.js?v=vGPT_2.13.2';
-import { SceneBlackout } from './scene-blackout.js?v=vGPT_2.13.2';
-import { MusicSlide } from './music-slide.js?v=vGPT_2.13.2';
+// Zapnij Pasy vGPT_2.14.0
+import { Flap } from './flap.js?v=vGPT_2.14.0';
+import { Clock } from './clock.js?v=vGPT_2.14.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.14.0';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.14.0';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.14.0';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.14.0';
+import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.14.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.14.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.14.0';
+import { startUpdates } from './updates.js?v=vGPT_2.14.0';
+import { BrightnessControl } from './brightness.js?v=vGPT_2.14.0';
+import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.14.0';
+import { DateFlap } from './date-flap.js?v=vGPT_2.14.0';
+import { SceneBlackout } from './scene-blackout.js?v=vGPT_2.14.0';
+import { MusicSlide } from './music-slide.js?v=vGPT_2.14.0';
 
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
@@ -146,7 +146,7 @@ function cancelVisuals(completeInsertion=false) {
   interrupting = false;
 }
 controller = new DisplayController({continuous:()=>layout.portrait,storage:layoutStorage,effects:{
-  clockOnly:value=>clockOnlyToggle.setAttribute('aria-pressed',String(value)),
+  clockOnly:updateClockOnlyControl,
   async fadeToBlack({animate}){
     brightness.close();const revision=++visualRevision;
     const completed=await blackout.play({animate});
@@ -199,7 +199,11 @@ controller = new DisplayController({continuous:()=>layout.portrait,storage:layou
 }});
 music=new MusicSlide({eligible:()=>started&&!controller.suspended&&!controller.clockOnly&&!remote?.listening?.active&&!controller.state.kind.startsWith('PASSENGER')});
 brightness.attach(music.view);
-clockOnlyToggle.setAttribute('aria-pressed',String(controller.clockOnly));
+function updateClockOnlyControl(value){
+  clockOnlyToggle.setAttribute('aria-pressed',String(value));
+  clockOnlyToggle.setAttribute('aria-label',value?'Pokaż znaki i muzykę — bez przypomnienia o pasach':'Jadę sam — tylko zegar');
+}
+updateClockOnlyControl(controller.clockOnly);
 function suspend() {
   brightness.suspend();
   remote?.suspend();
@@ -220,7 +224,7 @@ function resume() {
 }
 bindHoldControl(toggle,{onTap:()=>{music.cancel();if(remote)remote.localTap();else if(controller.tap())++fallbackInteractions;},onHold:()=>loadRemote({show:true})});
 bindHoldControl(brightnessToggle,{onTap:()=>brightness.open(),onHold:()=>{brightness.close();loadRemote({show:true});}});
-bindHoldControl(clockOnlyToggle,{onTap:()=>{if(!started)return;if(remote)remote.localClockOnly();else if(controller.enterClockOnly())++fallbackInteractions;}});
+bindHoldControl(clockOnlyToggle,{onTap:()=>{if(!started)return;if(remote)remote.localToggleClockOnly();else if(controller.toggleClockOnly())++fallbackInteractions;}});
 layoutToggle.addEventListener('click',()=>{
   if(!started)return;
   brightness.close();layout.toggle(transition);layoutToggle.setAttribute('aria-pressed',String(layout.portrait));fitViewport();
@@ -270,7 +274,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.13.2'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.14.0'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

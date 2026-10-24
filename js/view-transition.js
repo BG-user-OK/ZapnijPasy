@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.13.2 — two physical flaps between complete views.
+// Zapnij Pasy vGPT_2.14.0 — two physical flaps between complete views.
 export class ViewTransition {
   constructor(stage, views, { beforeChange = () => {}, beforeReveal = () => {}, onChange = () => {}, onFinish = () => {}, reducedMotion = () => false, duration = 820, measure } = {}) {
     this.stage = stage;
