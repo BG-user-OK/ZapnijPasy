@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.14.0 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.15.0 — optional display-side communication; the clock starts independently.
 import {ListeningDisplay} from './listening-display.js';
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';
@@ -128,10 +128,7 @@ export class RemoteDisplay {
     this.pair={pairId};write(PAIR_KEY,this.pair);this.approveButton.hidden=true;this.inviteText.hidden=true;
     this.inviteText.value='';this.invitationOff?.();this.invitation=null;await this.arm();
   }
-  notice(text){
-    this.message(text);if(!this.noticeElement){this.noticeElement=document.createElement('div');this.noticeElement.className='remote-notice';this.noticeElement.setAttribute('role','status');document.body.append(this.noticeElement);}
-    this.noticeElement.textContent=text;this.noticeElement.hidden=false;clearTimeout(this.noticeTimer);this.noticeTimer=setTimeout(()=>{this.noticeElement.hidden=true;},6000);
-  }
+  notice(text){this.message(text);}
   localTap() {
     if(this.pair&&this.ready&&this.listening){
       const now=Date.now();if(now-(this.lastListeningTap||0)<400)return false;this.lastListeningTap=now;

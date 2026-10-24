@@ -1,5 +1,5 @@
-// Zapnij Pasy vGPT_2.14.0 — device-local brightness, coarse location only, no remote writes.
-import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.14.0';
+// Zapnij Pasy vGPT_2.15.0 — device-local brightness, coarse location only, no remote writes.
+import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.15.0';
 export const BRIGHTNESS_LEVELS=Object.freeze([10,20,35,50,75,100]);
 export const BRIGHTNESS_KEY='zapnij-pasy-brightness-v1';
 const GPS_INTERVAL=600000,LOCATION_AGE=86400000;
@@ -36,7 +36,7 @@ export class BrightnessState{
   }
 }
 export class BrightnessControl{
-  constructor({document=globalThis.document,window=globalThis.window,storage,geolocation,now=Date.now,schedule=(fn,delay)=>window.setTimeout(fn,delay),cancel=id=>window.clearTimeout(id),state}={}){
+  constructor({document=globalThis.document,window=globalThis.window,storage,geolocation,now=Date.now,schedule=(fn,delay)=>window.setTimeout(fn,delay),cancel=id=>window.clearTimeout(id),state,version}={}){
     this.document=document;this.window=window;this.now=now;this.schedule=schedule;this.cancel=cancel;
     if(storage===undefined){try{storage=window.localStorage;}catch{storage=null;}}
     this.state=state||new BrightnessState({storage,now});this.geolocation=geolocation===undefined?window.navigator?.geolocation:geolocation;
@@ -46,7 +46,7 @@ export class BrightnessControl{
     this.title=document.createElement('p');this.title.className='brightness-title';controls.append(this.title);
     const bar=document.createElement('div');bar.className='brightness-bar';bar.setAttribute('role','group');bar.setAttribute('aria-label','Poziom jasności');
     this.buttons=BRIGHTNESS_LEVELS.map(level=>{const b=document.createElement('button');b.type='button';b.className='brightness-level';b.dataset.level=String(level);b.setAttribute('aria-label','Jasność '+level+' procent');const dot=document.createElement('span');dot.className='brightness-dot';dot.setAttribute('aria-hidden','true');const label=document.createElement('span');label.textContent=level+'%';b.append(dot,label);b.addEventListener('click',event=>{event.stopPropagation();this.state.choose(level);this.refresh();this.close();});bar.append(b);return b;});
-    controls.append(bar);this.status=document.createElement('p');this.status.className='brightness-status';controls.append(this.status);this.panel.append(controls);document.body.append(this.panel);
+    controls.append(bar);this.status=document.createElement('p');this.status.className='brightness-status';controls.append(this.status);const versionLabel=document.createElement('p');versionLabel.className='brightness-version';versionLabel.textContent='Wersja aplikacji: '+(version||document.querySelector('meta[name="app-version"]')?.content||'nieznana');controls.append(versionLabel);this.panel.append(controls);document.body.append(this.panel);
     for(const event of ['pointerdown','pointerup','pointercancel'])this.panel.addEventListener(event,e=>e.stopPropagation());
     this.panel.addEventListener('click',e=>{e.stopPropagation();if(e.target===this.panel)this.close();});
     this.onKey=e=>{if(e.key==='Escape'&&!this.panel.hidden){e.preventDefault();this.close();}};document.addEventListener('keydown',this.onKey);

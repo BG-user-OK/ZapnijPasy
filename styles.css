@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.14.0 */
+/* Zapnij Pasy vGPT_2.15.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -280,7 +280,6 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 @keyframes confirmation-scene-fade{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.is-flipping.is-settle-enabled .falling-flap,.is-flipping.is-settling .falling-flap{animation:none}.confirmation-blackout{animation:none!important}[data-confirmation="scene-fade"] .confirmation-blackout{opacity:1}}
 
-.remote-notice{position:fixed;z-index:90;bottom:8px;left:8px;right:8px;padding:10px;background:#15191feb;color:#ddd;font:16px sans-serif;text-align:center;pointer-events:none;border-radius:8px}.remote-notice[hidden]{display:none}
 
 /* Music stays inside the foreground display; hidden quadrant controls remain above it. */
 .music-slide{position:absolute;inset:0;z-index:26;background:#000;display:flex;align-items:center;justify-content:center;gap:3vw;padding:3vh 3vw;pointer-events:none;overflow:hidden;color:#ddd}
@@ -295,3 +294,5 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .stage[data-layout="portrait"] .music-title{font-size:clamp(16px,5vw,34px);margin:0 0 4px;-webkit-line-clamp:2}
 .stage[data-layout="portrait"] .music-artist{font-size:clamp(14px,3.8vw,24px);-webkit-line-clamp:1}
 .music-settings{z-index:110}.music-settings select{font:inherit;font-size:20px;background:#24272a;color:#ddd;padding:12px;border-radius:5px;margin:8px}
+
+.brightness-version{margin:14px 0 0;text-align:center;color:#a8adb1;font:14px system-ui}
