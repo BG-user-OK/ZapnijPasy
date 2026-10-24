@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.15.0 — Stage 1 development work.
+// Zapnij Pasy vGPT_2.16.0 — Stage 1 development work.
 // Serialize fresh, server-claimed commands; ACK only after the display effect completes.
 import {validateCommand} from './protocol.js';
 export class DisplayReceiver {

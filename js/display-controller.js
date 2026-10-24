@@ -1,7 +1,8 @@
-// Zapnij Pasy vGPT_2.15.0 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.15.0';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.15.0';
-import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.15.0';
+// Zapnij Pasy vGPT_2.16.0 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.16.0';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.16.0';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.16.0';
+export const SOLO_CLOCK_DURATION=120000;
 export const CLOCK_ONLY_KEY='zapnij-pasy-clock-only-v1';
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, storage = null }) {
@@ -88,9 +89,19 @@ export class DisplayController {
     this.state.phase='hold';
     if(this.clockOnlyLayoutPending){this.clockOnlyLayoutPending=false;return this.restoreClockOnly(false);}
     this.effects.idle?.();
+    if(!this.continuous()&&this.effects.music)this.waitUntil(this.now()+SOLO_CLOCK_DURATION,()=>this.soloMusic());
+  }
+  async soloMusic(){
+    if(this.suspended||!this.clockOnly||this.continuous())return;
+    const token=this.enter({kind:'CLOCK_ONLY',phase:'music'});
+    const shown=await this.effects.music({isCurrent:()=>this.valid(token)&&this.clockOnly&&!this.continuous()});
+    if(!this.valid(token))return;
+    // An unavailable cover leaves the live clock untouched; try at the next solo cycle.
+    if(shown)return this.restoreClockOnly(true);
+    return this.finishClockOnly();
   }
   async restoreClock(animate = true, {allowMusic=false}={}) {
-    if(allowMusic&&!this.clockOnly&&this.effects.music){
+    if(allowMusic&&!this.continuous()&&!this.clockOnly&&this.effects.music){
       const token=this.enter({kind:'MUSIC',phase:'presentation'});
       await this.effects.music({isCurrent:()=>this.valid(token)});
       if(!this.valid(token))return;
@@ -132,15 +143,16 @@ export class DisplayController {
   }
   finishPair(){
     if(this.state.pair===0&&this.effects.departRules)return this.departRules();
-    return this.restoreClock(true,{allowMusic:true});
+    return this.restoreClock(true);
   }
   async departRules({startedAt=this.now()}={}){
     const token=this.enter({kind:'GRAPHIC_PAIR_VISIBLE',phase:'exit',pair:0,startedAt,deadline:startedAt+PROHIBITION_ROLL_DURATION});
     const completed=await this.effects.departRules({elapsed:Math.max(0,this.now()-startedAt)});
-    if(this.valid(token)&&completed!==false)return this.restoreClock(true,{allowMusic:true});
+    if(this.valid(token)&&completed!==false)return this.restoreClock(true);
   }
   layoutChanged(){
     if(this.state.kind==='MUSIC'){this.enter({kind:'CLOCK',phase:'interrupt'});this.effects.cancel();return this.restoreClock(false);}
+    if(this.clockOnly&&this.state.phase==='music'){this.invalidate();this.effects.cancel();if(!this.suspended)return this.restoreClockOnly(false);return;}
     if(this.clockOnly){if(!this.suspended&&this.state.phase==='hold')return this.restoreClockOnly(false);this.clockOnlyLayoutPending=true;return;}
     if(!this.suspended&&this.continuous()&&this.state.kind.startsWith('CLOCK'))return this.restoreClock(true);
   }

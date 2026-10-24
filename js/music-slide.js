@@ -1,26 +1,19 @@
 // Optional TBox-only music metadata. No Firebase credentials, playback controls or idle polling.
 export const MUSIC_KEY='zapnij-pasy-music-v1';
 export const MUSIC_DURATION=60000;
-export const MUSIC_INTERVALS=Object.freeze([0,1,5,10,15,30]);
 const BASE='http://127.0.0.1:48321';
 const secret=value=>typeof value==='string'&&/^[A-Za-z0-9_-]{43}$/.test(value);
 export function validMusic(value){return value?.protocol===1&&typeof value.playing==='boolean'&&typeof value.revision==='string'&&/^[A-Za-z0-9_-]{1,80}$/.test(value.revision)&&typeof value.title==='string'&&value.title.length<=300&&typeof value.artist==='string'&&value.artist.length<=300&&typeof value.art==='boolean';}
-export class MusicSchedule{
-  constructor({now=()=>performance.now(),interval=10}={}){this.now=now;this.configure(interval);}
-  configure(interval){this.interval=MUSIC_INTERVALS.includes(interval)?interval:10;this.defer();}
-  defer(){this.next=this.now()+this.interval*60000;}
-  get due(){return this.interval>0&&this.now()>=this.next;}
-}
 export class MusicSlide{
   constructor({document=globalThis.document,window=globalThis.window,storage,eligible=()=>true}={}){
-    this.document=document;this.window=window;this.eligible=eligible;this.active=false;this.generation=0;this.inFlight=null;this.token='';this.invitation='';
-    try{this.storage=storage===undefined?window.localStorage:storage;const saved=JSON.parse(this.storage?.getItem(MUSIC_KEY)||'{}');if(secret(saved.token))this.token=saved.token;this.schedule=new MusicSchedule({now:()=>window.performance.now(),interval:saved.interval});}catch{this.schedule=new MusicSchedule({now:()=>window.performance.now()});}
+    this.document=document;this.window=window;this.eligible=eligible;this.active=false;this.generation=0;this.inFlight=null;this.enabled=true;this.token='';this.invitation='';
+    try{this.storage=storage===undefined?window.localStorage:storage;const saved=JSON.parse(this.storage?.getItem(MUSIC_KEY)||'{}');if(secret(saved.token))this.token=saved.token;this.enabled=typeof saved.enabled==='boolean'?saved.enabled:saved.interval!==0;}catch{/* Keep the clock usable if local storage is unavailable. */}
     // Only a single-use invitation enters a URL. Remove it before other app startup.
     const match=/^#music-invite=([A-Za-z0-9_-]{43})$/.exec(window.location.hash);
     if(match){this.invitation=match[1];window.history.replaceState(null,'',window.location.pathname+window.location.search);}
     this.createUI();
     document.addEventListener('zp-music-settings',()=>this.open());
-    window.addEventListener('storage',e=>{if(e.key===MUSIC_KEY){this.cancel();try{const saved=JSON.parse(this.storage?.getItem(MUSIC_KEY)||'{}');this.token=secret(saved.token)?saved.token:'';this.schedule.configure(saved.interval);this.renderSettings();}catch{this.token='';}}});
+    window.addEventListener('storage',e=>{if(e.key===MUSIC_KEY){this.cancel();try{const saved=JSON.parse(this.storage?.getItem(MUSIC_KEY)||'{}');this.token=secret(saved.token)?saved.token:'';this.enabled=typeof saved.enabled==='boolean'?saved.enabled:saved.interval!==0;this.renderSettings();}catch{this.token='';}}});
     document.addEventListener('visibilitychange',()=>{if(document.hidden)this.cancel();});
     if(this.invitation)this.open();
   }
@@ -32,21 +25,21 @@ export class MusicSlide{
     this.panel=d.createElement('section');this.panel.className='music-settings pairing-panel';this.panel.hidden=true;this.panel.setAttribute('role','dialog');this.panel.setAttribute('aria-modal','true');this.panel.setAttribute('aria-label','Muzyka TBox');
     const heading=d.createElement('h1');heading.textContent='Pokaz muzyki — TBox';
     this.status=d.createElement('p');this.status.setAttribute('role','status');
-    const help=d.createElement('p');help.textContent='Aktualna okładka i utwór przez 60 sekund, bez zmiany odtwarzania. Pasy mają pierwszeństwo. Połączenie działa tylko wewnątrz tego urządzenia.';
-    const label=d.createElement('label');label.textContent='Odstęp między pokazami: ';this.select=d.createElement('select');this.select.setAttribute('aria-label','Odstęp pokazu muzyki');
-    for(const interval of MUSIC_INTERVALS){const o=d.createElement('option');o.value=String(interval);o.textContent=interval?interval+' min':'Wyłączony';this.select.append(o);}label.append(this.select);
+    const help=d.createElement('p');help.textContent='Tylko poziomo: okładka przez 60 sekund po kamerze i śwince. Jadę sam: 2 minuty zegara, 1 minuta okładki. Bez zmiany odtwarzania; pasy mają pierwszeństwo.';
+    const label=d.createElement('label');label.textContent='Pokaz okładki: ';this.select=d.createElement('select');this.select.setAttribute('aria-label','Pokaz okładki');
+    for(const [value,text] of [['1','Włączony'],['0','Wyłączony']]){const o=d.createElement('option');o.value=value;o.textContent=text;this.select.append(o);}label.append(this.select);
     const button=(text,fn)=>{const b=d.createElement('button');b.type='button';b.textContent=text;b.onclick=()=>this.action(fn);return b;};
     this.connect=button('POŁĄCZ LOKALNY POKAZ',()=>this.enroll());
     this.check=button('SPRAWDŹ POŁĄCZENIE',async()=>{const c=new AbortController();try{const value=await this.statusRequest(c.signal);this.status.textContent=value.playing&&value.title&&value.art?'Połączono. Muzyka i okładka dostępne.':'Połączono. Pokaz poczeka na odtwarzany utwór z okładką.';}finally{c.abort();}});
-    const save=button('ZAPISZ I WRÓĆ',()=>{this.schedule.configure(Number(this.select.value));this.save();this.close();});
+    const save=button('ZAPISZ I WRÓĆ',()=>{this.enabled=this.select.value==='1';this.save();this.close();});
     const forget=button('ODŁĄCZ POKAZ W TEJ PRZEGLĄDARCE',()=>{this.cancel();this.token='';this.save();this.renderSettings();});
     const close=button('WRÓĆ BEZ ZMIAN',()=>this.close());
     this.panel.append(heading,this.status,help,label,this.connect,this.check,save,forget,close);
     this.panel.addEventListener('pointerdown',e=>e.stopPropagation());this.panel.addEventListener('pointerup',e=>e.stopPropagation());
     d.querySelector('.stage').append(this.view);d.body.append(this.panel);this.renderSettings();
   }
-  renderSettings(){this.select.value=String(this.schedule.interval);this.connect.hidden=!this.invitation;this.check.disabled=!this.token;this.status.textContent=this.invitation?'Jednorazowe zaproszenie bez limitu czasu oczekiwania. Kliknij POŁĄCZ i osobiście zezwól w Chrome na połączenie lokalne.':this.token?'Pokaz połączony lokalnie. Odstęp liczymy od zapisania ustawień lub zakończenia poprzedniego pokazu.':'Brak połączenia. Otwórz ZP — Media na TBoxie i wybierz POŁĄCZ POKAZ MUZYKI Z ZP.';}
-  save(){this.storage?.setItem(MUSIC_KEY,JSON.stringify({token:this.token,interval:this.schedule.interval}));}
+  renderSettings(){this.select.value=this.enabled?'1':'0';this.connect.hidden=!this.invitation;this.check.disabled=!this.token;this.status.textContent=this.invitation?'Jednorazowe zaproszenie bez limitu czasu oczekiwania. Kliknij POŁĄCZ i osobiście zezwól w Chrome na połączenie lokalne.':this.token?'Pokaz połączony lokalnie. Okładki są wyświetlane tylko w układzie poziomym.':'Brak połączenia. Otwórz ZP — Media na TBoxie i wybierz POŁĄCZ POKAZ MUZYKI Z ZP.';}
+  save(){this.storage?.setItem(MUSIC_KEY,JSON.stringify({token:this.token,enabled:this.enabled}));}
   open(){this.cancel();this.renderSettings();this.panel.hidden=false;this.select.focus();}
   close(){this.panel.hidden=true;}
   async action(fn){if(this.busy)return;this.busy=true;try{await fn();}catch{this.status.textContent='Brak połączenia lub zgody lokalnej. Sprawdź ZP — Media i uprawnienia witryny Chrome. Nieaktualne zaproszenie utwórz ponownie. Zegar i pasy działają niezależnie.';}finally{this.busy=false;}}
@@ -66,7 +59,7 @@ export class MusicSlide{
     if(!secret(this.invitation))throw new Error('INVITATION_REQUIRED');
     const value=await this.request('/v1/claim',{method:'POST',body:JSON.stringify({invitation:this.invitation})});
     if(value.protocol!==1||!secret(value.token))throw new Error('INVALID_CLAIM');
-    this.token=value.token;this.invitation='';this.save();this.schedule.defer();this.renderSettings();
+    this.token=value.token;this.invitation='';this.save();this.renderSettings();
   }
   async statusRequest(signal,after=''){
     if(!secret(this.token))throw new Error('NOT_PAIRED');
@@ -84,12 +77,13 @@ export class MusicSlide{
     }finally{if(!loaded||signal.aborted||generation!==this.generation)this.window.URL.revokeObjectURL(url);}
   }
   async play({isCurrent=()=>true}={}){
-    if(!this.token||!this.schedule.due||!this.eligible()||!this.panel.hidden||this.document.hidden)return false;
-    try{if((await this.window.navigator.permissions.query({name:'loopback-network'})).state!=='granted')return false;}catch{return false;}
-    this.cancel();const generation=this.generation;this.schedule.defer();const abort=new AbortController();this.inFlight=abort;
+    const eligible=()=>isCurrent()&&this.eligible()&&this.panel.hidden&&!this.document.hidden;
+    if(!this.token||!this.enabled||!eligible())return false;
+    this.cancel();const generation=this.generation;const abort=new AbortController();this.inFlight=abort;
     try{
+      if((await this.window.navigator.permissions.query({name:'loopback-network'})).state!=='granted'||abort.signal.aborted||generation!==this.generation||!eligible())return false;
       const value=await this.statusRequest(abort.signal);await this.update(value,abort.signal,generation);
-      if(abort.signal.aborted||!isCurrent()||!this.eligible()||generation!==this.generation)return false;
+      if(abort.signal.aborted||!eligible()||generation!==this.generation)return false;
       this.active=true;this.view.hidden=false;
       await new Promise(resolve=>{this.finish=resolve;this.timer=this.window.setTimeout(resolve,MUSIC_DURATION);this.watch(value.revision,abort.signal,generation,isCurrent).catch(resolve);});
       return true;
@@ -105,6 +99,6 @@ export class MusicSlide{
   }
   cancel(){
     ++this.generation;this.window.clearTimeout(this.timer);this.timer=null;this.inFlight?.abort();this.inFlight=null;this.finish?.();this.finish=null;
-    this.active=false;this.view.hidden=true;this.revision='';if(this.artUrl)this.window.URL.revokeObjectURL(this.artUrl);this.artUrl=null;this.image.removeAttribute('src');this.schedule.defer();
+    this.active=false;this.view.hidden=true;this.revision='';if(this.artUrl)this.window.URL.revokeObjectURL(this.artUrl);this.artUrl=null;this.image.removeAttribute('src');
   }
 }
