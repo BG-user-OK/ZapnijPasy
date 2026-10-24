@@ -15,7 +15,7 @@ export class MusicSlide{
   constructor({document=globalThis.document,window=globalThis.window,storage,eligible=()=>true}={}){
     this.document=document;this.window=window;this.eligible=eligible;this.active=false;this.generation=0;this.inFlight=null;this.token='';this.invitation='';
     try{this.storage=storage===undefined?window.localStorage:storage;const saved=JSON.parse(this.storage?.getItem(MUSIC_KEY)||'{}');if(secret(saved.token))this.token=saved.token;this.schedule=new MusicSchedule({now:()=>window.performance.now(),interval:saved.interval});}catch{this.schedule=new MusicSchedule({now:()=>window.performance.now()});}
-    // Only a short-lived, one-use invitation enters a URL. Remove it before other app startup.
+    // Only a single-use invitation enters a URL. Remove it before other app startup.
     const match=/^#music-invite=([A-Za-z0-9_-]{43})$/.exec(window.location.hash);
     if(match){this.invitation=match[1];window.history.replaceState(null,'',window.location.pathname+window.location.search);}
     this.createUI();
@@ -45,11 +45,11 @@ export class MusicSlide{
     this.panel.addEventListener('pointerdown',e=>e.stopPropagation());this.panel.addEventListener('pointerup',e=>e.stopPropagation());
     d.querySelector('.stage').append(this.view);d.body.append(this.panel);this.renderSettings();
   }
-  renderSettings(){this.select.value=String(this.schedule.interval);this.connect.hidden=!this.invitation;this.check.disabled=!this.token;this.status.textContent=this.invitation?'Zaproszenie ważne 2 minuty. Kliknij POŁĄCZ i osobiście zezwól w Chrome na połączenie lokalne.':this.token?'Pokaz połączony lokalnie. Odstęp liczymy od zapisania ustawień lub zakończenia poprzedniego pokazu.':'Brak połączenia. Otwórz ZP — Media na TBoxie i wybierz POŁĄCZ POKAZ MUZYKI Z ZP.';}
+  renderSettings(){this.select.value=String(this.schedule.interval);this.connect.hidden=!this.invitation;this.check.disabled=!this.token;this.status.textContent=this.invitation?'Jednorazowe zaproszenie bez limitu czasu oczekiwania. Kliknij POŁĄCZ i osobiście zezwól w Chrome na połączenie lokalne.':this.token?'Pokaz połączony lokalnie. Odstęp liczymy od zapisania ustawień lub zakończenia poprzedniego pokazu.':'Brak połączenia. Otwórz ZP — Media na TBoxie i wybierz POŁĄCZ POKAZ MUZYKI Z ZP.';}
   save(){this.storage?.setItem(MUSIC_KEY,JSON.stringify({token:this.token,interval:this.schedule.interval}));}
   open(){this.cancel();this.renderSettings();this.panel.hidden=false;this.select.focus();}
   close(){this.panel.hidden=true;}
-  async action(fn){if(this.busy)return;this.busy=true;try{await fn();}catch{this.status.textContent='Brak połączenia lub zgody lokalnej. Sprawdź ZP — Media i uprawnienia witryny Chrome. Wygasłe zaproszenie utwórz ponownie. Zegar i pasy działają niezależnie.';}finally{this.busy=false;}}
+  async action(fn){if(this.busy)return;this.busy=true;try{await fn();}catch{this.status.textContent='Brak połączenia lub zgody lokalnej. Sprawdź ZP — Media i uprawnienia witryny Chrome. Nieaktualne zaproszenie utwórz ponownie. Zegar i pasy działają niezależnie.';}finally{this.busy=false;}}
   async request(path,{signal,method='GET',body,timeout=4000}={}){
     const controller=new AbortController(),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)controller.abort();const timer=this.window.setTimeout(abort,timeout);
     try{

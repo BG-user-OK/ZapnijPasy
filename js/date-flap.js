@@ -1,4 +1,4 @@
-import {Flap} from './flap.js?v=vGPT_2.13.0';
+import {Flap} from './flap.js?v=vGPT_2.13.1';
 const DAYS=['niedziela','poniedziałek','wtorek','środa','czwartek','piątek','sobota'];
 const MONTHS=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia','września','października','listopada','grudnia'];
 export function polishDate(date=new Date()){

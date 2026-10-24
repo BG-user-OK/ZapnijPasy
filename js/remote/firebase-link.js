@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.13.0 — Stage 1 development work.
+// Zapnij Pasy vGPT_2.13.1 — Stage 1 development work.
 // Firebase transport for the communication proof; SDK dependencies are bundled locally.
 import {initializeApp,deleteApp} from 'firebase/app';
 import {initializeAuth,indexedDBLocalPersistence,browserLocalPersistence,inMemoryPersistence,signInAnonymously,connectAuthEmulator} from 'firebase/auth';
