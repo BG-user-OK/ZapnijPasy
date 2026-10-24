@@ -53,7 +53,7 @@ export class MusicSlide{
   async request(path,{signal,method='GET',body,timeout=4000}={}){
     const controller=new AbortController(),abort=()=>controller.abort();signal?.addEventListener('abort',abort,{once:true});if(signal?.aborted)controller.abort();const timer=this.window.setTimeout(abort,timeout);
     try{
-      const response=await this.window.fetch(BASE+path,{method,body,signal:controller.signal,credentials:'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer',targetAddressSpace:'loopback',headers:body?{'Content-Type':'application/json'}:{Authorization:'Bearer '+this.token}});
+      const response=await this.window.fetch(BASE+path,{method,body,signal:controller.signal,credentials:'omit',cache:'no-store',redirect:'error',referrerPolicy:'no-referrer',targetAddressSpace:'loopback',headers:body?{'Content-Type':'text/plain;charset=UTF-8'}:{Authorization:'Bearer '+this.token}});
       if(!response.ok)throw new Error('LOCAL_MUSIC_UNAVAILABLE');
       const max=path.startsWith('/v1/art?')?524288:8192;
       if(Number(response.headers.get('Content-Length'))>max)throw new Error('OVERSIZE');

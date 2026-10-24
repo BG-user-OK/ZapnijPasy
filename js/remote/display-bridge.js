@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.13.1 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.13.2 — optional display-side communication; the clock starts independently.
 import {ListeningDisplay} from './listening-display.js';
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';

@@ -1,5 +1,5 @@
-// Zapnij Pasy vGPT_2.13.1 — temporary Stage 1 controller; not the native Android app.
-import {FirebaseLink,createCommand,randomToken} from './js/remote/transport.bundle.js?v=vGPT_2.13.1';
+// Zapnij Pasy vGPT_2.13.2 — temporary Stage 1 controller; not the native Android app.
+import {FirebaseLink,createCommand,randomToken} from './js/remote/transport.bundle.js?v=vGPT_2.13.2';
 const $=id=>document.getElementById(id),PREFIX='zapnij-pasy-pilot-proof-v1-';
 const save=(key,value)=>localStorage.setItem(PREFIX+key,JSON.stringify(value));
 const load=key=>{try{return JSON.parse(localStorage.getItem(PREFIX+key)||'null');}catch{return null;}};

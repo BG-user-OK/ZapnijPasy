@@ -1,7 +1,7 @@
-// Zapnij Pasy vGPT_2.13.1 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.13.1';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.13.1';
-import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.13.1';
+// Zapnij Pasy vGPT_2.13.2 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.13.2';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.13.2';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.13.2';
 export const CLOCK_ONLY_KEY='zapnij-pasy-clock-only-v1';
 export class DisplayController {
   constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, storage = null }) {
