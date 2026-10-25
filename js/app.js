@@ -1,21 +1,21 @@
-// Zapnij Pasy vGPT_2.17.0
-import { Flap } from './flap.js?v=vGPT_2.17.0';
-import { Clock } from './clock.js?v=vGPT_2.17.0';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.17.0';
-import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.17.0';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.17.0';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.17.0';
-import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.17.0';
-import { DisplayController } from './display-controller.js?v=vGPT_2.17.0';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.17.0';
-import { startUpdates } from './updates.js?v=vGPT_2.17.0';
-import { BrightnessControl } from './brightness.js?v=vGPT_2.17.0';
-import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.17.0';
-import { DateFlap } from './date-flap.js?v=vGPT_2.17.0';
-import { SceneBlackout } from './scene-blackout.js?v=vGPT_2.17.0';
-import { MusicSlide } from './music-slide.js?v=vGPT_2.17.0';
+// Zapnij Pasy vGPT_2.18.0
+import { Flap } from './flap.js?v=vGPT_2.18.0';
+import { Clock } from './clock.js?v=vGPT_2.18.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.18.0';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.18.0';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.18.0';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.18.0';
+import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.18.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.18.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.18.0';
+import { startUpdates } from './updates.js?v=vGPT_2.18.0';
+import { BrightnessControl } from './brightness.js?v=vGPT_2.18.0';
+import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.18.0';
+import { DateFlap } from './date-flap.js?v=vGPT_2.18.0';
+import { SceneBlackout } from './scene-blackout.js?v=vGPT_2.18.0';
+import { MusicSlide } from './music-slide.js?v=vGPT_2.18.0';
 
-const APP_VERSION='vGPT_2.17.0';
+const APP_VERSION='vGPT_2.18.0';
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
 const signs = stage.querySelector('.signs');
@@ -264,7 +264,7 @@ Promise.all(requiredAssets.map(name=>new Promise((resolve,reject)=>{
   if(document.hidden) { controller.nextPair=saved.nextPair===1 ? 1 : 0; controller.state={kind:controller.clockOnly?'CLOCK_ONLY':'CLOCK_WAITING_FOR_MINUTE'}; controller.suspend(); }
   // Pairing must be able to interrupt the first rolling entrance, without waiting for it.
   else controller.start(saved || {}).catch(error=>console.warn(error.message));
-  try{if(localStorage.getItem('zapnij-pasy-remote-pair-v1'))loadRemote();}catch{/* Local clock remains available. */}
+  try{if(localStorage.getItem('zapnij-pasy-remote-pair-v1')||/^#supervisor-invite=/.test(location.hash))loadRemote();}catch{/* Local clock remains available. */}
 }).catch(error=>console.warn(error.message));
 checkForUpdates = startUpdates({
   isBusy:()=>transition.busy || blackout.busy || dateFlap.busy || modules.some(module=>module.pending!==undefined),
@@ -276,7 +276,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.17.0'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.18.0'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

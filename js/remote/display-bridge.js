@@ -1,8 +1,9 @@
-// Zapnij Pasy vGPT_2.17.0 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.18.0 — optional display-side communication; the clock starts independently.
 import {ListeningDisplay} from './listening-display.js';
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';
 import {DisplayReceiver} from './display-receiver.js';
+import {enrollSupervisor,revokeSupervisor} from './supervisor-enrollment.js';
 export const PAIR_KEY='zapnij-pasy-remote-pair-v1';
 const STATE_KEY='zapnij-pasy-remote-state-v1';
 const read=key=>JSON.parse(localStorage.getItem(key)||'null');
@@ -16,6 +17,8 @@ export class RemoteDisplay {
     this.protocol=new PassengerProtocol({store:{load:()=>read(STATE_KEY),save:value=>write(STATE_KEY,value)}});
     if(preferLocal||(!this.pair&&this.controller.state.kind==='PASSENGER'))this.adoptLocal();
     this.createPanel();
+    const supervisor=/^#supervisor-invite=([A-Za-z0-9_-]{43})$/.exec(globalThis.location?.hash||'');
+    if(supervisor){this.supervisorToken=supervisor[1];history.replaceState(null,'',location.pathname+location.search);this.supervisorButton.hidden=false;this.show();this.message('ZP — Media prosi o połączenie przełączania. Zatwierdź tylko na swoim TBoxie.');}
   }
   adoptLocal() {
     const s=this.protocol.snapshot(),kind=this.controller.state.kind;
@@ -47,6 +50,13 @@ export class RemoteDisplay {
       this.approveButton,this.button('Sprawdź połączenie',()=>this.connect()),
       this.button('Odłącz pilota',()=>this.unpair()),this.button('Pokaz muzyki TBox',()=>{this.hide();document.dispatchEvent(new Event('zp-music-settings'));}),this.button('Wróć do zegara',()=>this.hide()),help);
     document.body.append(panel);this.panel=panel;
+    this.supervisorButton=this.button('POŁĄCZ PRZEŁĄCZANIE YTM / ZP',async()=>{
+      if(!this.pair||!this.supervisorToken)throw new Error('PAIR_NOT_ACTIVE');
+      await this.ensureLink();await enrollSupervisor(this.link,this.pair.pairId,this.supervisorToken);
+      this.supervisorEnabled=true;this.supervisorToken='';this.supervisorButton.hidden=true;this.message('Połączono osobnego nadzorcę TBoxa. Sprawdź gotowość w ZP — Media.');
+    });this.supervisorButton.hidden=true;
+    const revoke=this.button('ODŁĄCZ PRZEŁĄCZANIE YTM / ZP',async()=>{if(!this.pair)return;await this.ensureLink();await revokeSupervisor(this.link,this.pair.pairId);this.message('Przełączanie odłączone. Pilot i pokaz okładek bez zmian.');});
+    panel.append(this.supervisorButton,revoke);
   }
   show(){this.panel.hidden=false;this.message(this.status);this.panel.querySelector('button')?.focus();}
   hide(){this.panel.hidden=true;document.querySelector('.mode-toggle')?.focus();}
@@ -91,6 +101,8 @@ export class RemoteDisplay {
     try {
       const {value}=await this.link.read('pairs/'+this.pair.pairId);
       if(!value?.members.active||value.members.displayUid!==this.link.auth.currentUser.uid)throw new Error('PAIR_NOT_ACTIVE');
+      this.supervisorEnabled=false;
+      try{this.supervisorEnabled=(await this.link.read('supervisors/'+this.pair.pairId+'/member')).value?.active===true;}catch{/* Existing displays do not require a supervisor. */}
       const state=this.protocol.snapshot(),remote=value.display,sequence=value.mailbox?.sequence||0;
       if(remote&&remote.revision>state.revision) {
         this.protocol.persist({...state,mode:remote.mode,sessionId:remote.sessionId,confirmedAt:remote.confirmedAt,revision:remote.revision,lastSequence:Math.max(state.lastSequence,sequence)});
@@ -105,7 +117,8 @@ export class RemoteDisplay {
       this.receiver=receiver;
       const generation=await this.link.armPresence(this.pair.pairId,receiver.view());
       if(this.hidden){receiver.suspend();await this.link.patch('pairs/'+this.pair.pairId+'/display',{online:false});return;}
-      receiver.activate(generation);this.listening?.close();this.listening=new ListeningDisplay({link:this.link,pairId:this.pair.pairId,generation,notify:text=>this.notice(text),onActive:()=>this.onListeningActive()});this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
+      receiver.activate(generation);this.listening?.close();this.listening=new ListeningDisplay({link:this.link,pairId:this.pair.pairId,generation,notify:text=>this.notice(text),onActive:state=>{this.onListeningActive();this.signalSupervisorReady(state,generation);}});this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
+      if(this.listening.state)this.signalSupervisorReady(this.listening.state,generation);
       this.mailboxOff?.();this.mailboxOff=this.link.watch('pairs/'+this.pair.pairId+'/mailbox',command=>{
         if(command?.status==='REQUESTED'&&this.ready&&!this.hidden)this.run(()=>receiver.receive(command.id));
       });
@@ -130,6 +143,12 @@ export class RemoteDisplay {
     this.inviteText.value='';this.invitationOff?.();this.invitation=null;await this.arm();
   }
   notice(text){this.message(text);}
+  signalSupervisorReady(state,generation){
+    if(!this.supervisorEnabled||!this.ready||this.hidden||!state?.sessionId||state.phase==='IDLE')return;
+    this.run(()=>this.link.put('supervisors/'+this.pair.pairId+'/displayReady',{
+      generation,sessionId:state.sessionId,listenRevision:state.revision,updatedAt:this.link.now()
+    }));
+  }
   localTap() {
     if(this.pair&&this.ready&&this.listening){
       const now=Date.now();if(now-(this.lastListeningTap||0)<400)return false;this.lastListeningTap=now;
