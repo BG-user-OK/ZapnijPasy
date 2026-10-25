@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.18.0 */
+/* Zapnij Pasy vGPT_2.19.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -296,3 +296,6 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .music-settings{z-index:110}.music-settings select{font:inherit;font-size:20px;background:#24272a;color:#ddd;padding:12px;border-radius:5px;margin:8px}
 
 .brightness-version{margin:14px 0 0;text-align:center;color:#a8adb1;font:14px system-ui}
+
+/* Local candidate: subtle driver-only work/microphone indicators. */
+.driver-status{position:fixed;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));display:flex;gap:8px;z-index:30;pointer-events:none;opacity:.7}.driver-status[hidden],.driver-status span[hidden]{display:none}.driver-status span{display:block;width:9px;height:9px;border-radius:50%}.driver-ready{background:#3caa66}.driver-listening{background:#d5b74c;animation:driver-listen-pulse 2s ease-in-out infinite}@keyframes driver-listen-pulse{50%{opacity:.35}}@media(prefers-reduced-motion:reduce){.driver-listening{animation:none}}

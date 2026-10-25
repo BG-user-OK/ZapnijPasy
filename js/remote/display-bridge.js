@@ -1,9 +1,10 @@
-// Zapnij Pasy vGPT_2.18.0 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.19.0 — optional display-side communication; the clock starts independently.
 import {ListeningDisplay} from './listening-display.js';
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';
 import {DisplayReceiver} from './display-receiver.js';
 import {enrollSupervisor,revokeSupervisor} from './supervisor-enrollment.js';
+import {DriverStatus} from './driver-status.js';
 export const PAIR_KEY='zapnij-pasy-remote-pair-v1';
 const STATE_KEY='zapnij-pasy-remote-state-v1';
 const read=key=>JSON.parse(localStorage.getItem(key)||'null');
@@ -117,7 +118,7 @@ export class RemoteDisplay {
       this.receiver=receiver;
       const generation=await this.link.armPresence(this.pair.pairId,receiver.view());
       if(this.hidden){receiver.suspend();await this.link.patch('pairs/'+this.pair.pairId+'/display',{online:false});return;}
-      receiver.activate(generation);this.listening?.close();this.listening=new ListeningDisplay({link:this.link,pairId:this.pair.pairId,generation,notify:text=>this.notice(text),onActive:state=>{this.onListeningActive();this.signalSupervisorReady(state,generation);}});this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
+      receiver.activate(generation);this.driverStatus?.close();this.driverStatus=new DriverStatus({link:this.link,pairId:this.pair.pairId});this.listening?.close();this.listening=new ListeningDisplay({link:this.link,pairId:this.pair.pairId,generation,notify:text=>this.notice(text),onActive:state=>{this.onListeningActive();this.signalSupervisorReady(state,generation);}});this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
       if(this.listening.state)this.signalSupervisorReady(this.listening.state,generation);
       this.mailboxOff?.();this.mailboxOff=this.link.watch('pairs/'+this.pair.pairId+'/mailbox',command=>{
         if(command?.status==='REQUESTED'&&this.ready&&!this.hidden)this.run(()=>receiver.receive(command.id));
@@ -183,9 +184,10 @@ export class RemoteDisplay {
   publish() {
     if(this.ready&&this.receiver&&this.link&&!this.hidden)this.run(()=>this.link.put('pairs/'+this.pair.pairId+'/display',this.receiver.view()));
   }
-  suspend(){this.listening?.close();this.listening=null;this.hidden=true;this.ready=false;this.receiver?.suspend();this.link?.pause();}
+  suspend(){this.driverStatus?.close();this.driverStatus=null;this.listening?.close();this.listening=null;this.hidden=true;this.ready=false;this.receiver?.suspend();this.link?.pause();}
   resume(){if(!this.hidden)return;this.hidden=false;if(this.link)this.link.resume();if(this.pair)this.run(async()=>{this.recovering=true;try{await this.applySaved();}finally{this.recovering=false;}await this.connect();});}
   async unpair() {
+    this.driverStatus?.close();this.driverStatus=null;
     this.listening?.close();this.listening=null;
     if(this.pair){await this.ensureLink();await this.link.patch('pairs/'+this.pair.pairId+'/members',{active:false});}
     this.pair=null;localStorage.removeItem(PAIR_KEY);this.ready=false;this.receiver?.suspend();this.receiver=null;this.mailboxOff?.();this.invitationOff?.();
