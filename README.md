@@ -1,4 +1,4 @@
-# Zapnij Pasy — vGPT_2.16.0
+# Zapnij Pasy — vGPT_2.17.0
 
 Landscape round signs now use the available screen: equal paired signs with a 6 px gap and at least 4 px safe margins, individually maximized camera/piggy circles. Red prohibitions roll in from the left over 4 s, hold upright for 60 s after arrival, then roll out to the right over 4 s. The current clock returns through the existing mechanical flaps from the empty black scene. Portrait behavior, original graphics, passenger/confirmation timings and native pilot remain unchanged.
 
@@ -79,3 +79,6 @@ Optional TBox music slide (vGPT_2.16.0): landscape only. In the normal cycle, li
 All four invisible quadrant controls remain visually invisible when focused, including after steering-wheel MODE; visible menu controls retain their focus indication. Layout, music interval and its existing local connection remain saved independently on this display. This PWA update does not modify any Android APK, media filter or Pixel detector.
 
 Passenger-facing display: technical Pixel request, connection, success and failure notices are shown only in the existing Pilot settings, with no main-screen banner. Communication, receipt handling and detection are unchanged. The bottom of the brightness menu identifies the running PWA version, including offline; it does not claim to show the newest remote release.
+
+
+PWA vGPT_2.17.0: discreet solo-to-presentation clock intro, five-second post-flip delay, ordinary landscape durations aligned near :54, and dimmed confirmation after recognised quiet. Portrait retains its continuous clock and baseline upper timing. Pilot vGPT_2.6.0 adds optional session-only GPS silent departure (20 km/h /100 m /10 healthy seconds) through separately acknowledged START_PRESENTATION; no belts or congratulations are fabricated. A manual solo choice invalidates older pending commands. Native binaries, diagrams, source instructions and recordings are not hosted here.

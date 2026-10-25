@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.16.0 — Stage 1 development work.
+// Zapnij Pasy vGPT_2.17.0 — Stage 1 development work.
 // Serialize fresh, server-claimed commands; ACK only after the display effect completes.
 import {validateCommand} from './protocol.js';
 export class DisplayReceiver {
@@ -20,7 +20,8 @@ export class DisplayReceiver {
       if(epoch!==this.epoch)return {ignored:'SUSPENDED'};
       const accepted=this.protocol.accept(claimed,{generation,now:this.link.now()});
       if(!accepted.id){const receipt=this.protocol.rejectClaimed(claimed,accepted.result,this.link.now());await this.link.acknowledge(this.pairId,claimed,receipt,this.view());return receipt;}
-      if(accepted.effect)await this.apply(accepted.effect,this.protocol.snapshot());
+      const applied=accepted.effect?await this.apply(accepted.effect,this.protocol.snapshot()):true;
+      if(applied===false&&epoch===this.epoch){const receipt=this.protocol.reject(id,'SUPERSEDED');await this.link.acknowledge(this.pairId,claimed,receipt,this.view());return receipt;}
       if(epoch!==this.epoch)return {ignored:'SUSPENDED'};
       if(this.protocol.state.revision!==accepted.appliedRevision) {
         const receipt=this.protocol.reject(id,'SUPERSEDED');

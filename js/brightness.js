@@ -1,5 +1,5 @@
-// Zapnij Pasy vGPT_2.16.0 — device-local brightness, coarse location only, no remote writes.
-import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.16.0';
+// Zapnij Pasy vGPT_2.17.0 — device-local brightness, coarse location only, no remote writes.
+import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.17.0';
 export const BRIGHTNESS_LEVELS=Object.freeze([10,20,35,50,75,100]);
 export const BRIGHTNESS_KEY='zapnij-pasy-brightness-v1';
 const GPS_INTERVAL=600000,LOCATION_AGE=86400000;

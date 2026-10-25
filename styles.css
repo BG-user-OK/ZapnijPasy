@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.16.0 */
+/* Zapnij Pasy vGPT_2.17.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -149,7 +149,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 
 /* Dim the rendered content, including cloned flap faces, without flattening its 3D ancestors. */
 .content-dimmer{position:absolute;inset:0;background:#000;opacity:var(--content-darkness,0);z-index:8;pointer-events:none}
-.signs[data-content="belts"] > .content-dimmer{opacity:0}
+.signs[data-content="belts"]:not([data-alarm-bright="false"]) > .content-dimmer{opacity:0}
 .brightness-toggle{position:absolute;z-index:31;left:0;top:0;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
 .brightness-toggle:focus{outline:none}
 .brightness-toggle:focus-visible{outline:none}
@@ -229,9 +229,9 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .extras-camera{left:50%;top:0;transform:translate3d(-50%,var(--extras-camera-start),0)}
 .extras-piggy{left:0;top:50%;transform:translate3d(var(--extras-piggy-start),-50%,0)}
 .extras-piggy img{transform:rotate(var(--extras-roll-start))}
-.is-extras-running .extras-camera{animation:extras-camera-travel 38000ms var(--extras-delay) both;will-change:transform}
-.is-extras-running .extras-piggy{animation:extras-piggy-travel 19000ms var(--piggy-delay) both;will-change:transform}
-.is-extras-running .extras-piggy img{animation:extras-piggy-roll 19000ms var(--piggy-delay) both;will-change:transform}
+.is-extras-running .extras-camera{animation:extras-camera-travel var(--camera-duration,38000ms) var(--extras-delay) both;will-change:transform}
+.is-extras-running .extras-piggy{animation:extras-piggy-travel var(--piggy-duration,19000ms) var(--piggy-delay) both;will-change:transform}
+.is-extras-running .extras-piggy img{animation:extras-piggy-roll var(--piggy-duration,19000ms) var(--piggy-delay) both;will-change:transform}
 @keyframes extras-camera-travel{
  0%{transform:translate3d(-50%,var(--extras-camera-start),0);animation-timing-function:ease-out}
  10.5263157895%{transform:translate3d(-50%,var(--extras-camera-top),0);animation-timing-function:linear}

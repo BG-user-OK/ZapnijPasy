@@ -76,7 +76,7 @@ export class MusicSlide{
       const previous=this.artUrl;this.artUrl=url;this.image.src=url;this.title.textContent=value.title;this.artist.textContent=value.artist;this.revision=value.revision;if(previous)this.window.URL.revokeObjectURL(previous);
     }finally{if(!loaded||signal.aborted||generation!==this.generation)this.window.URL.revokeObjectURL(url);}
   }
-  async play({isCurrent=()=>true}={}){
+  async play({isCurrent=()=>true,duration=MUSIC_DURATION}={}){
     const eligible=()=>isCurrent()&&this.eligible()&&this.panel.hidden&&!this.document.hidden;
     if(!this.token||!this.enabled||!eligible())return false;
     this.cancel();const generation=this.generation;const abort=new AbortController();this.inFlight=abort;
@@ -85,7 +85,7 @@ export class MusicSlide{
       const value=await this.statusRequest(abort.signal);await this.update(value,abort.signal,generation);
       if(abort.signal.aborted||!eligible()||generation!==this.generation)return false;
       this.active=true;this.view.hidden=false;
-      await new Promise(resolve=>{this.finish=resolve;this.timer=this.window.setTimeout(resolve,MUSIC_DURATION);this.watch(value.revision,abort.signal,generation,isCurrent).catch(resolve);});
+      await new Promise(resolve=>{this.finish=resolve;this.timer=this.window.setTimeout(resolve,Math.max(30000,Math.min(120000,typeof duration==='function'?duration():duration)));this.watch(value.revision,abort.signal,generation,isCurrent).catch(resolve);});
       return true;
     }catch{return false;}
     finally{if(generation===this.generation)this.cancel();}

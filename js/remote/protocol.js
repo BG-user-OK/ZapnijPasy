@@ -1,8 +1,8 @@
-// Zapnij Pasy vGPT_2.16.0 — Stage 1 development work.
+// Zapnij Pasy vGPT_2.17.0 — Stage 1 development work.
 // Stage 1: transport-independent, durable and idempotent passenger commands.
 // Local time display is deliberately outside this module.
 import {CONFIRMATION_DURATION} from '../confirmation-animation.js';
-const TYPES = new Set(['START_PASSENGER','CONFIRM_BELTS']);
+const TYPES = new Set(['START_PASSENGER','CONFIRM_BELTS','START_PRESENTATION']);
 const ID = /^[A-Za-z0-9_-]{22}$/;
 export const COMMAND_TTL_MS = 15000;
 export const INVITATION_TTL_MS = 120000;
@@ -61,12 +61,15 @@ export class PassengerProtocol {
     if(command.type==='START_PASSENGER') {
       if(next.mode==='PASSENGER') result='ALREADY_ACTIVE';
       else {next.mode='PASSENGER';next.sessionId=command.sessionId;next.confirmedAt=0;++next.revision;result='STARTED';effect='START_PASSENGER';}
+    } else if(command.type==='START_PRESENTATION') {
+      if(next.mode!=='CLOCK')result='SESSION_IN_PROGRESS';
+      else {next.mode='CLOCK';next.sessionId='';next.confirmedAt=0;++next.revision;result='PRESENTATION_STARTED';effect='START_PRESENTATION';}
     } else if(!next.sessionId || next.mode==='CLOCK') result='NO_ACTIVE_SESSION';
     else if(next.sessionId!==command.sessionId) result='SESSION_MISMATCH';
     else if(next.mode==='PASSENGER_CONFIRMED_WAIT') result='ALREADY_CONFIRMED';
     else {next.mode='PASSENGER_CONFIRMED_WAIT';next.confirmedAt=now;++next.revision;result='CONFIRMED';effect='CONFIRM_BELTS';}
     next.lastSequence=command.sequence;
-    const receipt={id:command.id,sequence:command.sequence,sessionId:next.sessionId,status:['NO_ACTIVE_SESSION','SESSION_MISMATCH'].includes(result)?'REJECTED':'ACCEPTED',result,appliedRevision:next.revision,processedAt:now,fingerprint:fingerprint(command)};
+    const receipt={id:command.id,sequence:command.sequence,sessionId:next.sessionId,status:['NO_ACTIVE_SESSION','SESSION_MISMATCH','SESSION_IN_PROGRESS'].includes(result)?'REJECTED':'ACCEPTED',result,appliedRevision:next.revision,processedAt:now,fingerprint:fingerprint(command)};
     next.receipts=[...next.receipts,receipt].slice(-32);
     this.persist(next);
     return {...copy(receipt),effect};
@@ -87,7 +90,7 @@ export class PassengerProtocol {
   reject(id,result) {
     const next=copy(this.state);const receipt=next.receipts.find(item=>item.id===id);
     if(!receipt)throw new Error('Unknown accepted command');
-    if(receipt.status==='ACCEPTED'){receipt.status='REJECTED';receipt.result=result;}
+    if(receipt.status==='ACCEPTED'){receipt.status='REJECTED';receipt.result=result;receipt.appliedRevision=next.revision;}
     this.persist(next);return copy(receipt);
   }
   localTap(now=this.now()) {
@@ -96,8 +99,8 @@ export class PassengerProtocol {
     else {next.mode='PASSENGER';next.sessionId=this.newId();next.confirmedAt=0;}
     this.persist(next);return this.snapshot();
   }
-  restoreClock() {
-    if(this.state.mode==='CLOCK') return this.snapshot();
+  restoreClock({force=false}={}) {
+    if(this.state.mode==='CLOCK'&&!force) return this.snapshot();
     const next={...copy(this.state),mode:'CLOCK',sessionId:'',confirmedAt:0,revision:this.state.revision+1};
     this.persist(next);return this.snapshot();
   }

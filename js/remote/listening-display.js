@@ -1,7 +1,7 @@
 // Ephemeral authenticated display-to-Pixel requests. Reconnection never replays an action.
 import {randomToken} from './protocol.js';
 export const LISTENING_TTL=15000;
-export function listeningActive(state,now){return !!state&&state.protocol===1&&['STARTING','LISTENING','ALARM','CELEBRATING','UNKNOWN'].includes(state.phase)&&state.expiresAt>now;}
+export function listeningActive(state,now){return !!state&&state.protocol===1&&['STARTING','LISTENING','ALARM','CELEBRATING','DEPARTING','UNKNOWN'].includes(state.phase)&&state.expiresAt>now;}
 export function listeningRequest(action,generation,sessionId,now,id=randomToken(16)){
   if(!['ARM','STOP'].includes(action)||!/^[A-Za-z0-9_-]{22}$/.test(generation))throw new Error('INVALID_LISTENING_REQUEST');
   return {id,sessionId:action==='ARM'?id:sessionId,action,generation,createdAt:now,expiresAt:now+LISTENING_TTL,status:'REQUESTED'};

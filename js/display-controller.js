@@ -1,11 +1,15 @@
-// Zapnij Pasy vGPT_2.16.0 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.16.0';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.16.0';
-import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.16.0';
+// Zapnij Pasy vGPT_2.17.0 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.17.0';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.17.0';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.17.0';
 export const SOLO_CLOCK_DURATION=120000;
+export function minuteSlot(preferred,minimum,offset=54000){
+  const target=Math.round((preferred-offset)/60000)*60000+offset;
+  return target<minimum?target+Math.ceil((minimum-target)/60000)*60000:target;
+}
 export const CLOCK_ONLY_KEY='zapnij-pasy-clock-only-v1';
 export class DisplayController {
-  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, storage = null }) {
+  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, align=true, storage = null }) {
     this.effects = effects;
     this.now = now;
     this.schedule = schedule;
@@ -16,7 +20,7 @@ export class DisplayController {
     this.timer = null;
     this.suspended = false;
     this.lastTap = null;
-    this.continuous=continuous;
+    this.continuous=continuous;this.align=align;
     this.storage=storage;this.clockOnly=false;
     try{this.clockOnly=storage?.getItem(CLOCK_ONLY_KEY)==='true';}catch{/* Local operation remains available. */}
   }
@@ -69,16 +73,21 @@ export class DisplayController {
   toggleClockOnly(options){
     return this.clockOnly?this.leaveClockOnly(options):this.enterClockOnly(options);
   }
-  leaveClockOnly({animate=true}={}){
+  leaveClockOnly(){
     if(this.suspended||!this.clockOnly)return false;
-    this.clockOnlyLayoutPending=false;this.setClockOnly(false);
-    const token=this.enter({kind:'NORMAL_RESUMING',phase:'fade'});
-    this.nextPair=0;this.effects.cancel();
-    return (async()=>{
-      const cleared=await this.effects.fadeToBlack?.({animate});
-      if(!this.valid(token)||cleared===false)return;
-      return this.showPair(0,{animate});
-    })();
+    return this.beginPresentation();
+  }
+  async beginPresentation(){
+    if(this.suspended||this.state.kind.startsWith('PASSENGER'))return false;
+    const wasSolo=this.clockOnly;this.clockOnlyLayoutPending=false;this.setClockOnly(false);this.nextPair=0;
+    const token=this.enter({kind:'NORMAL_RESUMING',phase:'clock-hold',view:wasSolo?'solo':'clock'});this.effects.cancel();
+    // Preserve the visible clock/date without an entrance, black fade or immediate prohibitions.
+    if(!await this.reveal(wasSolo?'solo':'clock',token,false))return false;
+    const deadline=this.align&&!this.continuous()?minuteSlot(this.now()+60000,this.now()+30000,5000):this.now()+60000;
+    this.waitUntil(deadline,()=>this.showPair(0),token);return true;
+  }
+  slideDuration(nominal=60000){
+    return this.align&&!this.continuous()?minuteSlot(this.now()+nominal,this.now()+30000)-this.now():nominal;
   }
   async restoreClockOnly(animate=false){
     const token=this.enter({kind:'CLOCK_ONLY',phase:'transition'});
@@ -94,7 +103,7 @@ export class DisplayController {
   async soloMusic(){
     if(this.suspended||!this.clockOnly||this.continuous())return;
     const token=this.enter({kind:'CLOCK_ONLY',phase:'music'});
-    const shown=await this.effects.music({isCurrent:()=>this.valid(token)&&this.clockOnly&&!this.continuous()});
+    const shown=await this.effects.music({isCurrent:()=>this.valid(token)&&this.clockOnly&&!this.continuous(),duration:()=>this.slideDuration()});
     if(!this.valid(token))return;
     // An unavailable cover leaves the live clock untouched; try at the next solo cycle.
     if(shown)return this.restoreClockOnly(true);
@@ -103,7 +112,7 @@ export class DisplayController {
   async restoreClock(animate = true, {allowMusic=false}={}) {
     if(allowMusic&&!this.continuous()&&!this.clockOnly&&this.effects.music){
       const token=this.enter({kind:'MUSIC',phase:'presentation'});
-      await this.effects.music({isCurrent:()=>this.valid(token)});
+      await this.effects.music({isCurrent:()=>this.valid(token),duration:()=>this.slideDuration()});
       if(!this.valid(token))return;
     }
     if(this.clockOnly)return this.restoreClockOnly(animate);
@@ -118,6 +127,12 @@ export class DisplayController {
   }
   onClockMinute(time, { natural = false, completed = Promise.resolve() } = {}) {
     if(this.clockOnly||this.continuous())return;
+    if(!this.suspended&&this.state.kind==='NORMAL_RESUMING'&&natural){
+      const token=this.token;Promise.resolve(completed).then(()=>{
+        if(!this.valid(token)||this.state.kind!=='NORMAL_RESUMING'||this.state.deadline>=this.now()+5000)return;
+        if(this.timer!==null)this.cancel(this.timer);this.waitUntil(this.now()+5000,()=>this.showPair(0),token);
+      });return;
+    }
     if (this.suspended || this.state.kind !== 'CLOCK_WAITING_FOR_MINUTE') return;
     if (!natural) { this.state.minute = time.minute; return; }
     if (time.minute <= this.state.minute) return;
@@ -125,7 +140,7 @@ export class DisplayController {
     Promise.resolve(completed).then(() => {
       if (!this.valid(token)) return;
       this.state.phase = 'delay';
-      this.waitUntil(this.now()+10000, () => this.showPair(this.nextPair), token);
+      this.waitUntil(this.now()+5000, () => this.showPair(this.nextPair), token);
     });
   }
   async showPair(pair,{animate=true}={}) {
@@ -134,11 +149,12 @@ export class DisplayController {
     if (!await this.reveal(pair === 0 ? 'rules' : 'extras', token,animate)) return false;
     this.nextPair = pair === 0 ? 1 : 0;
     if(pair===1){
-      this.state.phase='sequence';this.state.startedAt=this.now();this.state.deadline=this.now()+EXTRAS_DURATION;
+      this.state.phase='sequence';this.state.startedAt=this.now();this.state.duration=this.slideDuration(EXTRAS_DURATION);this.state.deadline=this.now()+this.state.duration;
       this.runExtras(token);return true;
     }
     this.state.phase = 'hold';
-    this.waitUntil(this.now()+60000, () => this.finishPair(), token);
+    const end=this.align&&!this.continuous()?minuteSlot(this.now()+64000,this.now()+34000)-4000:this.now()+60000;
+    this.waitUntil(end, () => this.finishPair(), token);
     return true;
   }
   finishPair(){
@@ -158,7 +174,7 @@ export class DisplayController {
   }
   async runExtras(token) {
     const elapsed=Math.max(0,this.now()-this.state.startedAt);
-    const completed=await this.effects.extras({elapsed});
+    const completed=await this.effects.extras({elapsed,duration:this.state.duration||EXTRAS_DURATION});
     if(this.valid(token)&&completed!==false)return this.restoreClock(true,{allowMusic:true});
   }
   tap() {
@@ -171,7 +187,7 @@ export class DisplayController {
     return true;
   }
   startPassenger({animate = true} = {}) {
-    this.clockOnlyLayoutPending=false;this.setClockOnly(false);
+    this.effects.dimBelts?.(true);this.clockOnlyLayoutPending=false;this.setClockOnly(false);
     this.enter({kind:'PASSENGER', phase:'interrupt'});
     this.nextPair = 0;
     this.effects.cancel();
@@ -202,6 +218,7 @@ export class DisplayController {
   }
   confirmPassenger({startedAt=this.now(),recover=false} = {}) {
     if(this.state.kind==='PASSENGER_CONFIRMED_WAIT')return;
+    this.effects.dimBelts?.(false);
     const token=this.enter({kind:'PASSENGER_CONFIRMED_WAIT',confirmedAt:startedAt});
     this.effects.freeze();
     let index=0,phaseStartedAt=startedAt;
@@ -243,6 +260,10 @@ export class DisplayController {
       const token=this.enter(saved);
       this.effects.freeze();
       return this.confirmationStep(index,token,phaseStartedAt);
+    }
+    if(saved.kind==='NORMAL_RESUMING'&&saved.phase==='clock-hold'&&saved.deadline>this.now()){
+      const token=this.enter(saved);if(!await this.reveal(saved.view||'clock',token,false))return;
+      this.waitUntil(saved.deadline,()=>this.showPair(0),token);return;
     }
     if(saved.kind==='GRAPHIC_PAIR_VISIBLE'&&saved.phase==='sequence'&&saved.deadline>this.now()){
       const token=this.enter(saved);

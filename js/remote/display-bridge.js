@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.16.0 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.17.0 — optional display-side communication; the clock starts independently.
 import {ListeningDisplay} from './listening-display.js';
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';
@@ -99,6 +99,7 @@ export class RemoteDisplay {
       if(this.hidden)return;
       const receiver=new DisplayReceiver({link:this.link,pairId:this.pair.pairId,protocol:this.protocol,apply:async(effect,state)=>{
         if(effect==='START_PASSENGER')await this.controller.startPassenger();
+        else if(effect==='START_PRESENTATION')return this.controller.beginPresentation();
         else this.controller.confirmPassenger({startedAt:Date.now()});
       }});
       this.receiver=receiver;
@@ -153,7 +154,7 @@ export class RemoteDisplay {
     if(this.listening?.active)this.run(()=>this.listening.request('STOP'));
     if(this.controller.suspended||this.controller.clockOnly)return false;
     this.controller.enterClockOnly();
-    try{this.protocol.restoreClock();this.publish();}
+    try{this.protocol.restoreClock({force:true});this.publish();}
     catch{this.storageFailed=true;this.ready=false;this.receiver?.suspend();this.link?.pause();this.message(this.errorText({code:'STORAGE_UNAVAILABLE'}));}
     return true;
   }

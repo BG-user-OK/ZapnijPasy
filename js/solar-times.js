@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.16.0 — local NOAA/Meeus solar calculations, no network dependency.
+// Zapnij Pasy vGPT_2.17.0 — local NOAA/Meeus solar calculations, no network dependency.
 const RAD=Math.PI/180, DAY=86400000;
 export const KATOWICE=Object.freeze({latitude:50.2649,longitude:19.0238});
 export function validCoordinates(point){return !!point&&Number.isFinite(point.latitude)&&Math.abs(point.latitude)<=90&&Number.isFinite(point.longitude)&&Math.abs(point.longitude)<=180;}
