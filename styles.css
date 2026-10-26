@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.19.0 */
+/* Zapnij Pasy vGPT_2.19.1 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -156,7 +156,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .layout-toggle{position:absolute;z-index:31;left:50%;top:0;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
 .layout-toggle:focus{outline:none}
 .layout-toggle:focus-visible{outline:none}
-.clock-only-toggle{position:absolute;z-index:31;left:50%;top:50%;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
+.clock-only-toggle{position:absolute;z-index:31;left:0;top:50%;width:50%;height:50%;margin:0;padding:0;border:0;background:transparent;color:transparent;-webkit-appearance:none;appearance:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none;cursor:pointer}
 .clock-only-toggle:focus{outline:none}
 .clock-only-toggle:focus-visible{outline:none}
 .signs[data-content="black"]{background:#000}

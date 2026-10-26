@@ -1,7 +1,7 @@
-// Zapnij Pasy vGPT_2.19.0 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.19.0';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.19.0';
-import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.19.0';
+// Zapnij Pasy vGPT_2.19.1 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.19.1';
+import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.19.1';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.19.1';
 export const SOLO_CLOCK_DURATION=120000;
 export function minuteSlot(preferred,minimum,offset=54000){
   const target=Math.round((preferred-offset)/60000)*60000+offset;

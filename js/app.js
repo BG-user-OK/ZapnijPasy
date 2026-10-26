@@ -1,21 +1,21 @@
-// Zapnij Pasy vGPT_2.19.0
-import { Flap } from './flap.js?v=vGPT_2.19.0';
-import { Clock } from './clock.js?v=vGPT_2.19.0';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.19.0';
-import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.19.0';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.19.0';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.19.0';
-import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.19.0';
-import { DisplayController } from './display-controller.js?v=vGPT_2.19.0';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.19.0';
-import { startUpdates } from './updates.js?v=vGPT_2.19.0';
-import { BrightnessControl } from './brightness.js?v=vGPT_2.19.0';
-import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.19.0';
-import { DateFlap } from './date-flap.js?v=vGPT_2.19.0';
-import { SceneBlackout } from './scene-blackout.js?v=vGPT_2.19.0';
-import { MusicSlide } from './music-slide.js?v=vGPT_2.19.0';
+// Zapnij Pasy vGPT_2.19.1
+import { Flap } from './flap.js?v=vGPT_2.19.1';
+import { Clock } from './clock.js?v=vGPT_2.19.1';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.19.1';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.19.1';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.19.1';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.19.1';
+import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.19.1';
+import { DisplayController } from './display-controller.js?v=vGPT_2.19.1';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.19.1';
+import { startUpdates } from './updates.js?v=vGPT_2.19.1';
+import { BrightnessControl } from './brightness.js?v=vGPT_2.19.1';
+import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.19.1';
+import { DateFlap } from './date-flap.js?v=vGPT_2.19.1';
+import { SceneBlackout } from './scene-blackout.js?v=vGPT_2.19.1';
+import { MusicSlide } from './music-slide.js?v=vGPT_2.19.1';
 
-const APP_VERSION='vGPT_2.19.0';
+const APP_VERSION='vGPT_2.19.1';
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
 const signs = stage.querySelector('.signs');
@@ -64,7 +64,7 @@ function fitViewport() {
   const signStyle=getComputedStyle(signs);
   const landscapeSize=prohibitionGeometry({width,height,size:Math.min(width,height),left:parseFloat(signStyle.paddingLeft)||0,right:parseFloat(signStyle.paddingRight)||0,top:parseFloat(signStyle.paddingTop)||0,bottom:parseFloat(signStyle.paddingBottom)||0,gap:parseFloat(signStyle.columnGap)||6}).size;
   stage.style.setProperty('--sign-size',(layout.portrait?signSize:Math.floor(landscapeSize))+'px');
-  Object.assign(toggle.style,{left:'0px',top:height/2+'px',width:width/2+'px',height:height/2+'px'});
+  Object.assign(toggle.style,{left:width/2+'px',top:height/2+'px',width:width/2+'px',height:height/2+'px'});
   extras.resize();
   prohibitions.resize();
   dateFlap.resize();
@@ -276,7 +276,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.19.0'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.19.1'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

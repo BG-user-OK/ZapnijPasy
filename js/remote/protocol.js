@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.19.0 — Stage 1 development work.
+// Zapnij Pasy vGPT_2.19.1 — Stage 1 development work.
 // Stage 1: transport-independent, durable and idempotent passenger commands.
 // Local time display is deliberately outside this module.
 import {CONFIRMATION_DURATION} from '../confirmation-animation.js';

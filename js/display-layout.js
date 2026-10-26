@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.19.0 — device-local layout; one live clock, one graphic surface.
+// Zapnij Pasy vGPT_2.19.1 — device-local layout; one live clock, one graphic surface.
 export const LAYOUT_KEY='zapnij-pasy-layout-v1';
 export function layoutGeometry(width,height,portrait,padding){
   const regionHeight=portrait?height/2:height,gap=Math.max(5,Math.min(12,width*.012));
