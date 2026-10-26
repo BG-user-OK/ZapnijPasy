@@ -1,5 +1,5 @@
-// Zapnij Pasy vGPT_2.19.1 — device-local brightness, coarse location only, no remote writes.
-import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.19.1';
+// Zapnij Pasy vGPT_2.19.2 — device-local brightness, coarse location only, no remote writes.
+import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.19.2';
 export const BRIGHTNESS_LEVELS=Object.freeze([10,20,35,50,75,100]);
 export const BRIGHTNESS_KEY='zapnij-pasy-brightness-v1';
 const GPS_INTERVAL=600000,LOCATION_AGE=86400000;
@@ -42,11 +42,23 @@ export class BrightnessControl{
     this.state=state||new BrightnessState({storage,now});this.geolocation=geolocation===undefined?window.navigator?.geolocation:geolocation;
     this.timer=null;this.suspended=false;this.locationRevision=0;this.inFlight=false;this.lastAttempt=-Infinity;this.denied=false;this.gpsError='';
     this.panel=document.createElement('section');this.panel.id='brightness-panel';this.panel.className='brightness-panel';this.panel.hidden=true;this.panel.setAttribute('role','dialog');this.panel.setAttribute('aria-modal','true');this.panel.setAttribute('aria-label','Jasność');
+    const sheet=document.createElement('div');sheet.className='brightness-sheet';
     const controls=document.createElement('div');controls.className='brightness-controls';
     this.title=document.createElement('p');this.title.className='brightness-title';controls.append(this.title);
     const bar=document.createElement('div');bar.className='brightness-bar';bar.setAttribute('role','group');bar.setAttribute('aria-label','Poziom jasności');
     this.buttons=BRIGHTNESS_LEVELS.map(level=>{const b=document.createElement('button');b.type='button';b.className='brightness-level';b.dataset.level=String(level);b.setAttribute('aria-label','Jasność '+level+' procent');const dot=document.createElement('span');dot.className='brightness-dot';dot.setAttribute('aria-hidden','true');const label=document.createElement('span');label.textContent=level+'%';b.append(dot,label);b.addEventListener('click',event=>{event.stopPropagation();this.state.choose(level);this.refresh();this.close();});bar.append(b);return b;});
-    controls.append(bar);this.status=document.createElement('p');this.status.className='brightness-status';controls.append(this.status);const versionLabel=document.createElement('p');versionLabel.className='brightness-version';versionLabel.textContent='Wersja aplikacji: '+(version||document.querySelector('meta[name="app-version"]')?.content||'nieznana');controls.append(versionLabel);this.panel.append(controls);document.body.append(this.panel);
+    controls.append(bar);this.status=document.createElement('p');this.status.className='brightness-status';controls.append(this.status);
+    const help=document.createElement('div');help.className='brightness-help';
+    const shortcuts=document.createElement('div');shortcuts.className='brightness-shortcuts';shortcuts.setAttribute('aria-label','Ukryte przyciski');
+    for(const label of ['Lewa górna: Jasność.','Prawa górna: Pion / poziom.','Lewa dolna: Jadę sam / prezentacja.','Prawa dolna: Nasłuch / STOP.']){const line=document.createElement('p');line.textContent=label;shortcuts.append(line);}
+    const legend=document.createElement('div');legend.className='brightness-legend';legend.setAttribute('aria-label','Kropki informacyjne');
+    for(const [color,label] of [['ready','Praca i automat gotowe.'],['listening','Pulsująca: nasłuch aktywny.']]){
+      const line=document.createElement('p');const dot=document.createElement('span');dot.className='brightness-key-dot driver-'+color;dot.setAttribute('aria-hidden','true');
+      const text=document.createElement('span');text.textContent=label;line.append(dot,text);legend.append(line);
+    }
+    help.append(shortcuts,legend);
+    const versionLabel=document.createElement('p');versionLabel.className='brightness-version';versionLabel.textContent='Wersja aplikacji: '+(version||document.querySelector('meta[name="app-version"]')?.content||'nieznana');
+    sheet.append(controls,help,versionLabel);this.panel.append(sheet);document.body.append(this.panel);
     for(const event of ['pointerdown','pointerup','pointercancel'])this.panel.addEventListener(event,e=>e.stopPropagation());
     this.panel.addEventListener('click',e=>{e.stopPropagation();if(e.target===this.panel)this.close();});
     this.onKey=e=>{if(e.key==='Escape'&&!this.panel.hidden){e.preventDefault();this.close();}};document.addEventListener('keydown',this.onKey);
