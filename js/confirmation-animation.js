@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.20.0 — shared confirmation timeline and cancellable presentation.
+// Zapnij Pasy vGPT_2.20.1 — shared confirmation timeline and cancellable presentation.
 export const CONFIRMATION_CHECK_PATH='M 100 270 L 210 370 L 390 173';
 export const CONFIRMATION_STEPS = Object.freeze([
   {name:'checks',duration:800,animation:'confirmation-mark'},

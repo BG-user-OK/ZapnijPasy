@@ -1,4 +1,4 @@
-// Zapnij Pasy vGPT_2.20.0 — one cancellable camera/rolling-piggy timeline.
+// Zapnij Pasy vGPT_2.20.1 — one cancellable camera/rolling-piggy timeline.
 export const EXTRAS_DURATION=60000;
 export const PIGGY_DURATION=19000;
 export const EXTRAS_STEPS=Object.freeze([

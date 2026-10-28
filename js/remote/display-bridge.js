@@ -1,17 +1,17 @@
-// Zapnij Pasy vGPT_2.20.0 — optional display-side communication; the clock starts independently.
+// Zapnij Pasy vGPT_2.20.1 — optional display-side communication; the clock starts independently.
 import {ListeningDisplay} from './listening-display.js';
 import {FirebaseLink} from './firebase-link.js';
 import {PassengerProtocol} from './protocol.js';
 import {DisplayReceiver} from './display-receiver.js';
 import {enrollSupervisor,revokeSupervisor} from './supervisor-enrollment.js';
-import {DriverStatus} from './driver-status.js';
+import {DriverStatus,workIsActive} from './driver-status.js';
 export const PAIR_KEY='zapnij-pasy-remote-pair-v1';
 const STATE_KEY='zapnij-pasy-remote-state-v1';
 const read=key=>JSON.parse(localStorage.getItem(key)||'null');
 const write=(key,value)=>localStorage.setItem(key,JSON.stringify(value));
 export class RemoteDisplay {
   constructor({controller,config,preferLocal=false,onListeningActive=()=>{}}) {
-    this.onListeningActive=onListeningActive;
+    this.onListeningActive=onListeningActive;this.workValue=null;
     this.controller=controller;this.config=config;this.link=null;this.receiver=null;
     this.connecting=null;this.arming=false;this.ready=false;this.hidden=document.hidden;
     this.pair=read(PAIR_KEY);this.invitation=null;this.status='Pilot nie jest sparowany.';
@@ -20,6 +20,14 @@ export class RemoteDisplay {
     this.createPanel();
     const supervisor=/^#supervisor-invite=([A-Za-z0-9_-]{43})$/.exec(globalThis.location?.hash||'');
     if(supervisor){this.supervisorToken=supervisor[1];history.replaceState(null,'',location.pathname+location.search);this.supervisorButton.hidden=false;this.show();this.message('ZP — Media prosi o połączenie przełączania. Zatwierdź tylko na swoim TBoxie.');}
+  }
+  get workAllowed(){return workIsActive(this.workValue,this.link?.now()||Date.now());}
+  workChanged(allowed,value){this.workValue=value;if(allowed)this.workStopRequested=false;else this.forcePrivate();}
+  forcePrivate(){
+    if(this.listening?.active&&!this.workStopRequested){this.workStopRequested=true;this.run(()=>this.listening.request('STOP'));}
+    if(this.workAllowed){this.workStopRequested=false;return;}
+    if(!this.controller.clockOnly||this.controller.state.kind!=='CLOCK_ONLY')this.controller.enterClockOnly({animate:false});
+    if(this.protocol.state.mode!=='CLOCK'){this.protocol.restoreClock({force:true});this.publish();}
   }
   adoptLocal() {
     const s=this.protocol.snapshot(),kind=this.controller.state.kind;
@@ -63,6 +71,7 @@ export class RemoteDisplay {
   hide(){this.panel.hidden=true;document.querySelector('.mode-toggle')?.focus();}
   async initialize(){if(this.pair&&!this.hidden){this.recovering=true;try{await this.applySaved();}finally{this.recovering=false;}await this.run(()=>this.connect());}}
   async applySaved() {
+    if(!this.workAllowed){this.forcePrivate();return;}
     // The local clock-only choice supersedes an old persisted passenger scene, not a fresh command.
     if(this.controller.clockOnly){this.protocol.restoreClock();return;}
     const state=this.protocol.snapshot();
@@ -88,7 +97,7 @@ export class RemoteDisplay {
       try{await link.authenticate();}
       catch(error){await link.close();if(this.link===link)this.link=null;throw error;}
       link.watch('.info/connected',connected=>{
-        if(!connected){this.ready=false;this.receiver?.suspend();if(this.pair)this.message('Połączenie przerwane. Zegar i dotyk działają lokalnie.');}
+        if(!connected){this.workChanged(false,null);this.ready=false;this.receiver?.suspend();if(this.pair)this.message('Połączenie przerwane. Zegar i dotyk działają lokalnie.');}
         else if(this.pair&&!this.hidden)this.run(()=>this.arm());
       });
       return link;
@@ -102,6 +111,7 @@ export class RemoteDisplay {
     try {
       const {value}=await this.link.read('pairs/'+this.pair.pairId);
       if(!value?.members.active||value.members.displayUid!==this.link.auth.currentUser.uid)throw new Error('PAIR_NOT_ACTIVE');
+      this.workValue=value.driverStatus||null;
       this.supervisorEnabled=false;
       try{this.supervisorEnabled=(await this.link.read('supervisors/'+this.pair.pairId+'/member')).value?.active===true;}catch{/* Existing displays do not require a supervisor. */}
       const state=this.protocol.snapshot(),remote=value.display,sequence=value.mailbox?.sequence||0;
@@ -111,6 +121,7 @@ export class RemoteDisplay {
       } else if(sequence>state.lastSequence)this.protocol.persist({...state,lastSequence:sequence});
       if(this.hidden)return;
       const receiver=new DisplayReceiver({link:this.link,pairId:this.pair.pairId,protocol:this.protocol,apply:async(effect,state)=>{
+        if(!this.workAllowed){this.forcePrivate();return false;}
         if(effect==='START_PASSENGER')await this.controller.startPassenger();
         else if(effect==='START_PRESENTATION')return this.controller.beginPresentation();
         else this.controller.confirmPassenger({startedAt:Date.now()});
@@ -118,7 +129,7 @@ export class RemoteDisplay {
       this.receiver=receiver;
       const generation=await this.link.armPresence(this.pair.pairId,receiver.view());
       if(this.hidden){receiver.suspend();await this.link.patch('pairs/'+this.pair.pairId+'/display',{online:false});return;}
-      receiver.activate(generation);this.driverStatus?.close();this.driverStatus=new DriverStatus({link:this.link,pairId:this.pair.pairId});this.listening?.close();this.listening=new ListeningDisplay({link:this.link,pairId:this.pair.pairId,generation,notify:text=>this.notice(text),onActive:state=>{this.onListeningActive();this.signalSupervisorReady(state,generation);}});this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
+      receiver.activate(generation);this.driverStatus?.close();this.driverStatus=new DriverStatus({link:this.link,pairId:this.pair.pairId,initialValue:value.driverStatus,onWork:(allowed,state)=>this.workChanged(allowed,state)});this.listening?.close();this.listening=new ListeningDisplay({link:this.link,pairId:this.pair.pairId,generation,notify:text=>this.notice(text),onActive:state=>{this.onListeningActive();this.signalSupervisorReady(state,generation);}});this.ready=true;await this.link.put('pairs/'+this.pair.pairId+'/display',receiver.view());
       if(this.listening.state)this.signalSupervisorReady(this.listening.state,generation);
       this.mailboxOff?.();this.mailboxOff=this.link.watch('pairs/'+this.pair.pairId+'/mailbox',command=>{
         if(command?.status==='REQUESTED'&&this.ready&&!this.hidden)this.run(()=>receiver.receive(command.id));
@@ -151,6 +162,7 @@ export class RemoteDisplay {
     }));
   }
   localTap() {
+    if(!this.workAllowed){this.forcePrivate();return false;}
     if(this.pair&&this.ready&&this.listening){
       const now=Date.now();if(now-(this.lastListeningTap||0)<400)return false;this.lastListeningTap=now;
       const stop=this.listening.active||this.controller.state.kind==='PASSENGER'||this.controller.state.kind==='PASSENGER_CONFIRMED_WAIT';
@@ -170,6 +182,7 @@ export class RemoteDisplay {
     return this.startPresentation();
   }
   startPresentation(){
+    if(!this.workAllowed){this.forcePrivate();return false;}
     if(this.controller.suspended||this.controller.state.kind.startsWith('PASSENGER'))return false;
     if(this.listening?.active&&this.listening.state?.controls===2){this.run(()=>this.listening.request('PRESENTATION'));return true;}
     if(this.listening?.active)this.run(()=>this.listening.request('STOP'));

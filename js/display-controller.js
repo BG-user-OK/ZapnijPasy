@@ -1,7 +1,7 @@
-// Zapnij Pasy vGPT_2.20.0 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.20.0';
-import { EXTRAS_DURATION, PIGGY_DURATION } from './extras-animation.js?v=vGPT_2.20.0';
-import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.20.0';
+// Zapnij Pasy vGPT_2.20.1 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.20.1';
+import { EXTRAS_DURATION, PIGGY_DURATION } from './extras-animation.js?v=vGPT_2.20.1';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.20.1';
 export const SOLO_CLOCK_DURATION=120000;
 export function minuteSlot(preferred,minimum,offset=54000){
   const target=Math.round((preferred-offset)/60000)*60000+offset;
@@ -9,8 +9,8 @@ export function minuteSlot(preferred,minimum,offset=54000){
 }
 export const CLOCK_ONLY_KEY='zapnij-pasy-clock-only-v1';
 export class DisplayController {
-  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, cameraEnabled=()=>true, align=true, storage = null }) {
-    this.effects = effects;
+  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, cameraEnabled=()=>true, passengerAllowed=()=>true, align=true, storage = null }) {
+    this.effects = effects;this.passengerAllowed=passengerAllowed;
     this.now = now;
     this.schedule = schedule;
     this.cancel = cancel;
@@ -49,6 +49,7 @@ export class DisplayController {
   start({ nextPair = 0 } = {}) {
     this.nextPair = nextPair === 1 ? 1 : 0;
     this.suspended = false;
+    if(!this.passengerAllowed())this.setClockOnly(true);
     if(this.clockOnly)return this.restoreClockOnly(false);
     return this.restoreClock(this.continuous());
   }
@@ -78,6 +79,7 @@ export class DisplayController {
     return this.beginPresentation();
   }
   async beginPresentation(){
+    if(!this.passengerAllowed()){this.enterClockOnly({animate:false});return false;}
     if(this.suspended||this.state.kind.startsWith('PASSENGER'))return false;
     const wasSolo=this.clockOnly;this.clockOnlyLayoutPending=false;this.setClockOnly(false);this.nextPair=0;
     const token=this.enter({kind:'NORMAL_RESUMING',phase:'clock-hold',view:wasSolo?'solo':'clock'});this.effects.cancel();
@@ -110,6 +112,7 @@ export class DisplayController {
     return this.finishClockOnly();
   }
   async restoreClock(animate = true, {allowMusic=false}={}) {
+    if(!this.passengerAllowed()){this.setClockOnly(true);return this.restoreClockOnly(animate);}
     if(allowMusic&&!this.continuous()&&!this.clockOnly&&this.effects.music){
       const token=this.enter({kind:'MUSIC',phase:'presentation'});
       await this.effects.music({isCurrent:()=>this.valid(token),duration:()=>this.slideDuration()});
@@ -144,6 +147,7 @@ export class DisplayController {
     });
   }
   async showPair(pair,{animate=true}={}) {
+    if(!this.passengerAllowed()){this.enterClockOnly({animate:false});return false;}
     if(this.clockOnly)return false;
     const token = this.enter({kind:'GRAPHIC_PAIR_VISIBLE', phase:'transition', pair});
     if (!await this.reveal(pair === 0 ? 'rules' : 'extras', token,animate)) return false;
@@ -190,6 +194,7 @@ export class DisplayController {
     return true;
   }
   startPassenger({animate = true} = {}) {
+    if(!this.passengerAllowed()){this.enterClockOnly({animate:false});return false;}
     this.effects.dimBelts?.(true);this.clockOnlyLayoutPending=false;this.setClockOnly(false);
     this.enter({kind:'PASSENGER', phase:'interrupt'});
     this.nextPair = 0;
@@ -220,6 +225,7 @@ export class DisplayController {
     if(this.valid(token))this.passengerOpen(token);
   }
   confirmPassenger({startedAt=this.now(),recover=false} = {}) {
+    if(!this.passengerAllowed()){this.enterClockOnly({animate:false});return false;}
     if(this.state.kind==='PASSENGER_CONFIRMED_WAIT')return;
     this.effects.dimBelts?.(false);
     const token=this.enter({kind:'PASSENGER_CONFIRMED_WAIT',confirmedAt:startedAt});
@@ -253,6 +259,7 @@ export class DisplayController {
   async resume() {
     if (!this.suspended) return;
     this.suspended = false;
+    if(!this.passengerAllowed())this.setClockOnly(true);
     if(this.clockOnly)return this.restoreClockOnly(false);
     const saved = {...this.state};
     if (saved.kind === 'PASSENGER') return this.startPassenger({animate:false});
