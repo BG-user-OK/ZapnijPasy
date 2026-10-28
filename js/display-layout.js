@@ -1,14 +1,11 @@
-// Zapnij Pasy vGPT_2.19.2 — device-local layout; one live clock, one graphic surface.
+// Zapnij Pasy vGPT_2.20.0 — device-local layout; one live clock, one graphic surface.
 export const LAYOUT_KEY='zapnij-pasy-layout-v1';
 export function layoutGeometry(width,height,portrait,padding){
   const regionHeight=portrait?height/2:height,gap=Math.max(5,Math.min(12,width*.012));
   const usableHeight=Math.max(1,regionHeight-padding.top-padding.bottom),moduleWidth=Math.max(1,(width-padding.left-padding.right-gap)/2);
   const cardHeight=Math.max(1,Math.floor(Math.min(usableHeight,moduleWidth*1.14)));
   const digitSize=Math.max(1,Math.floor(Math.min(cardHeight*1.14,moduleWidth*.94)));
-  // Match the stationary hours mark: 13px square, bottom .13em in the centered digit line.
-  const driverStatusLeft=(width+padding.left-padding.right)/2;
-  const driverStatusCenterY=(portrait?height/2:0)+(regionHeight+padding.top-padding.bottom)/2+digitSize*.37-6.5;
-  return {regionHeight,gap,cardHeight,digitSize,driverStatusLeft,driverStatusCenterY,signSize:Math.max(1,Math.floor(Math.min(usableHeight,(width-36)/2)))};
+  return {regionHeight,gap,cardHeight,digitSize,signSize:Math.max(1,Math.floor(Math.min(usableHeight,(width-36)/2)))};
 }
 export class DisplayLayout{
   constructor({stage,clock,signs,document,storage=null}){

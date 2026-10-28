@@ -1,7 +1,8 @@
-// Zapnij Pasy vGPT_2.19.2 — device-local brightness, coarse location only, no remote writes.
-import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.19.2';
+// Zapnij Pasy vGPT_2.20.0 — device-local brightness, coarse location only, no remote writes.
+import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.20.0';
 export const BRIGHTNESS_LEVELS=Object.freeze([10,20,35,50,75,100]);
 export const BRIGHTNESS_KEY='zapnij-pasy-brightness-v1';
+export const ITAXI_KEY='zapnij-pasy-itaxi-v1';
 const GPS_INTERVAL=600000,LOCATION_AGE=86400000;
 export class BrightnessState{
   constructor({now=Date.now,storage=null}={}){
@@ -36,15 +37,20 @@ export class BrightnessState{
   }
 }
 export class BrightnessControl{
-  constructor({document=globalThis.document,window=globalThis.window,storage,geolocation,now=Date.now,schedule=(fn,delay)=>window.setTimeout(fn,delay),cancel=id=>window.clearTimeout(id),state,version}={}){
+  constructor({document=globalThis.document,window=globalThis.window,storage,geolocation,now=Date.now,schedule=(fn,delay)=>window.setTimeout(fn,delay),cancel=id=>window.clearTimeout(id),state,version,onTaxiChange=()=>{}}={}){
     this.document=document;this.window=window;this.now=now;this.schedule=schedule;this.cancel=cancel;
     if(storage===undefined){try{storage=window.localStorage;}catch{storage=null;}}
+    this.taxiMode=false;try{this.taxiMode=storage?.getItem(ITAXI_KEY)==='true';}catch{}this.onTaxiChange=onTaxiChange;this.preferenceStorage=storage;
     this.state=state||new BrightnessState({storage,now});this.geolocation=geolocation===undefined?window.navigator?.geolocation:geolocation;
     this.timer=null;this.suspended=false;this.locationRevision=0;this.inFlight=false;this.lastAttempt=-Infinity;this.denied=false;this.gpsError='';
     this.panel=document.createElement('section');this.panel.id='brightness-panel';this.panel.className='brightness-panel';this.panel.hidden=true;this.panel.setAttribute('role','dialog');this.panel.setAttribute('aria-modal','true');this.panel.setAttribute('aria-label','Jasność');
     const sheet=document.createElement('div');sheet.className='brightness-sheet';
     const controls=document.createElement('div');controls.className='brightness-controls';
-    this.title=document.createElement('p');this.title.className='brightness-title';controls.append(this.title);
+    const heading=document.createElement('div');heading.className='brightness-heading';
+    this.title=document.createElement('p');this.title.className='brightness-title';
+    this.taxiButton=document.createElement('button');this.taxiButton.type='button';this.taxiButton.className='itaxi-toggle';this.taxiButton.textContent='iT';this.taxiButton.setAttribute('aria-label','iTaxi — pomiń kamerę');this.taxiButton.setAttribute('aria-pressed',String(this.taxiMode));
+    this.taxiButton.addEventListener('click',event=>{event.stopPropagation();this.taxiMode=!this.taxiMode;try{this.preferenceStorage?.setItem(ITAXI_KEY,String(this.taxiMode));}catch{}this.taxiButton.setAttribute('aria-pressed',String(this.taxiMode));this.onTaxiChange(this.taxiMode);});
+    heading.append(this.title,this.taxiButton);controls.append(heading);
     const bar=document.createElement('div');bar.className='brightness-bar';bar.setAttribute('role','group');bar.setAttribute('aria-label','Poziom jasności');
     this.buttons=BRIGHTNESS_LEVELS.map(level=>{const b=document.createElement('button');b.type='button';b.className='brightness-level';b.dataset.level=String(level);b.setAttribute('aria-label','Jasność '+level+' procent');const dot=document.createElement('span');dot.className='brightness-dot';dot.setAttribute('aria-hidden','true');const label=document.createElement('span');label.textContent=level+'%';b.append(dot,label);b.addEventListener('click',event=>{event.stopPropagation();this.state.choose(level);this.refresh();this.close();});bar.append(b);return b;});
     controls.append(bar);this.status=document.createElement('p');this.status.className='brightness-status';controls.append(this.status);
@@ -52,7 +58,7 @@ export class BrightnessControl{
     const shortcuts=document.createElement('div');shortcuts.className='brightness-shortcuts';shortcuts.setAttribute('aria-label','Ukryte przyciski');
     for(const label of ['Lewa górna: Jasność.','Prawa górna: Pion / poziom.','Lewa dolna: Jadę sam / prezentacja.','Prawa dolna: Nasłuch / STOP.']){const line=document.createElement('p');line.textContent=label;shortcuts.append(line);}
     const legend=document.createElement('div');legend.className='brightness-legend';legend.setAttribute('aria-label','Kropki informacyjne');
-    for(const [color,label] of [['ready','Praca i automat gotowe.'],['listening','Pulsująca: nasłuch aktywny.']]){
+    for(const [color,label] of [['idle','Brak gotowości.'],['ready','Praca i automat gotowe.'],['listening','Pulsująca: nasłuch aktywny.']]){
       const line=document.createElement('p');const dot=document.createElement('span');dot.className='brightness-key-dot driver-'+color;dot.setAttribute('aria-hidden','true');
       const text=document.createElement('span');text.textContent=label;line.append(dot,text);legend.append(line);
     }

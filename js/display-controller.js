@@ -1,7 +1,7 @@
-// Zapnij Pasy vGPT_2.19.2 — explicit display sequence; all durations use timestamp deadlines.
-import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.19.2';
-import { EXTRAS_DURATION } from './extras-animation.js?v=vGPT_2.19.2';
-import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.19.2';
+// Zapnij Pasy vGPT_2.20.0 — explicit display sequence; all durations use timestamp deadlines.
+import { CONFIRMATION_STEPS } from './confirmation-animation.js?v=vGPT_2.20.0';
+import { EXTRAS_DURATION, PIGGY_DURATION } from './extras-animation.js?v=vGPT_2.20.0';
+import { PROHIBITION_ROLL_DURATION } from './prohibition-animation.js?v=vGPT_2.20.0';
 export const SOLO_CLOCK_DURATION=120000;
 export function minuteSlot(preferred,minimum,offset=54000){
   const target=Math.round((preferred-offset)/60000)*60000+offset;
@@ -9,7 +9,7 @@ export function minuteSlot(preferred,minimum,offset=54000){
 }
 export const CLOCK_ONLY_KEY='zapnij-pasy-clock-only-v1';
 export class DisplayController {
-  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, align=true, storage = null }) {
+  constructor({ effects, now = () => Date.now(), schedule = (fn, ms) => setTimeout(fn, ms), cancel = id => clearTimeout(id), continuous = () => false, cameraEnabled=()=>true, align=true, storage = null }) {
     this.effects = effects;
     this.now = now;
     this.schedule = schedule;
@@ -20,7 +20,7 @@ export class DisplayController {
     this.timer = null;
     this.suspended = false;
     this.lastTap = null;
-    this.continuous=continuous;this.align=align;
+    this.continuous=continuous;this.cameraEnabled=cameraEnabled;this.align=align;
     this.storage=storage;this.clockOnly=false;
     try{this.clockOnly=storage?.getItem(CLOCK_ONLY_KEY)==='true';}catch{/* Local operation remains available. */}
   }
@@ -87,7 +87,7 @@ export class DisplayController {
     this.waitUntil(deadline,()=>this.showPair(0),token);return true;
   }
   slideDuration(nominal=60000){
-    return this.align&&!this.continuous()?minuteSlot(this.now()+nominal,this.now()+30000)-this.now():nominal;
+    return this.align&&!this.continuous()?minuteSlot(this.now()+nominal,this.now()+Math.min(30000,nominal))-this.now():nominal;
   }
   async restoreClockOnly(animate=false){
     const token=this.enter({kind:'CLOCK_ONLY',phase:'transition'});
@@ -149,7 +149,7 @@ export class DisplayController {
     if (!await this.reveal(pair === 0 ? 'rules' : 'extras', token,animate)) return false;
     this.nextPair = pair === 0 ? 1 : 0;
     if(pair===1){
-      this.state.phase='sequence';this.state.startedAt=this.now();this.state.duration=this.slideDuration(EXTRAS_DURATION);this.state.deadline=this.now()+this.state.duration;
+      this.state.phase='sequence';this.state.startedAt=this.now();this.state.duration=this.slideDuration(this.cameraEnabled()?EXTRAS_DURATION:PIGGY_DURATION);this.state.deadline=this.now()+this.state.duration;
       this.runExtras(token);return true;
     }
     this.state.phase = 'hold';
@@ -171,6 +171,9 @@ export class DisplayController {
     if(this.clockOnly&&this.state.phase==='music'){this.invalidate();this.effects.cancel();if(!this.suspended)return this.restoreClockOnly(false);return;}
     if(this.clockOnly){if(!this.suspended&&this.state.phase==='hold')return this.restoreClockOnly(false);this.clockOnlyLayoutPending=true;return;}
     if(!this.suspended&&this.continuous()&&this.state.kind.startsWith('CLOCK'))return this.restoreClock(true);
+  }
+  extrasPreferenceChanged(){
+    if(!this.suspended&&this.state.kind==='GRAPHIC_PAIR_VISIBLE'&&this.state.pair===1)return this.showPair(1,{animate:false});
   }
   async runExtras(token) {
     const elapsed=Math.max(0,this.now()-this.state.startedAt);

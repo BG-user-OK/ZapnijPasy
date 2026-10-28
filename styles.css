@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.19.2 */
+/* Zapnij Pasy vGPT_2.20.0 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -62,7 +62,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
   text-shadow: 0 1px 1px #0009;
 }
 .face-content > span { display:block; position:relative; transform:scaleX(.82); }
-.hours .face-content > span::after { content:""; position:absolute; left:calc(100% + 8px); bottom:.13em; width:13px; height:13px; background:currentColor; transform:scaleX(1.219512); transform-origin:left center; border-radius:0; }
+.hours .face-content > span::after { content:""; position:absolute; left:calc(100% + 8px); bottom:.13em; width:13px; height:13px; background:var(--hour-mark-color,currentColor); transform:scaleX(1.219512); transform-origin:left center; border-radius:0; }
 .half--lower .face-content { top: calc(var(--card-height) * -0.5); }
 .falling-flap { display:none; position:absolute; z-index:4; left:0; top:0; width:100%; height:50%; transform-origin:center bottom; transform-style:preserve-3d; -webkit-transform-style:preserve-3d; }
 .falling-flap > .half { top:0; height:100%; }
@@ -303,4 +303,16 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 .brightness-version{margin:14px 0 0;text-align:center;color:#a8adb1;font:14px system-ui}
 
 /* Local candidate: subtle driver-only work/microphone indicators. */
-.driver-status{position:fixed;left:var(--driver-status-left,50%);top:calc(var(--driver-status-center-y,75vh) - 4.5px);transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:30;pointer-events:none;opacity:.7}.driver-status[hidden],.driver-status span[hidden]{display:none}.driver-status span{display:block;width:9px;height:9px;border-radius:50%}.driver-ready{background:#3caa66}.driver-listening{background:#d5b74c;animation:driver-listen-pulse 2s ease-in-out infinite}@keyframes driver-listen-pulse{50%{opacity:.35}}@media(prefers-reduced-motion:reduce){.driver-listening{animation:none}}
+.driver-idle{background:#eceeeb}.driver-ready{background:#3caa66}.driver-listening{background:#d5b74c;animation:driver-listen-pulse 2s ease-in-out infinite}
+:root[data-driver-state="ready"]{--hour-mark-color:#3caa66}
+:root[data-driver-state="listening"]{--hour-mark-color:#d5b74c}
+:root[data-driver-state="listening"] .hours .face-content > span::after{animation:driver-listen-pulse 2s ease-in-out infinite}
+@keyframes driver-listen-pulse{50%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){.driver-listening,:root[data-driver-state="listening"] .hours .face-content > span::after{animation:none}}
+
+.brightness-heading{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;min-height:36px}
+.brightness-heading .brightness-title{grid-column:2}
+.itaxi-toggle{grid-column:3;justify-self:center;min-width:38px;min-height:34px;padding:3px 5px;border:2px solid #67717a;border-radius:8px;background:#23292f;color:#a8adb1;font:700 16px system-ui;touch-action:manipulation}
+.itaxi-toggle[aria-pressed="true"]{border-color:#9baebd;background:#738fa4;color:#111418;box-shadow:0 0 0 3px #728da333}
+.itaxi-toggle:focus-visible{outline:2px solid #8a9aa6;outline-offset:3px}
+.extras-scene.is-piggy-only .extras-camera{display:none!important}

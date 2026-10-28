@@ -1,21 +1,21 @@
-// Zapnij Pasy vGPT_2.19.2
-import { Flap } from './flap.js?v=vGPT_2.19.2';
-import { Clock } from './clock.js?v=vGPT_2.19.2';
-import { ViewTransition } from './view-transition.js?v=vGPT_2.19.2';
-import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.19.2';
-import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.19.2';
-import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.19.2';
-import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.19.2';
-import { DisplayController } from './display-controller.js?v=vGPT_2.19.2';
-import { bindHoldControl } from './hold-control.js?v=vGPT_2.19.2';
-import { startUpdates } from './updates.js?v=vGPT_2.19.2';
-import { BrightnessControl } from './brightness.js?v=vGPT_2.19.2';
-import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.19.2';
-import { DateFlap } from './date-flap.js?v=vGPT_2.19.2';
-import { SceneBlackout } from './scene-blackout.js?v=vGPT_2.19.2';
-import { MusicSlide } from './music-slide.js?v=vGPT_2.19.2';
+// Zapnij Pasy vGPT_2.20.0
+import { Flap } from './flap.js?v=vGPT_2.20.0';
+import { Clock } from './clock.js?v=vGPT_2.20.0';
+import { ViewTransition } from './view-transition.js?v=vGPT_2.20.0';
+import { SeatBeltAnimation, createSeatBeltSign } from './seat-belt-animation.js?v=vGPT_2.20.0';
+import { ConfirmationAnimation } from './confirmation-animation.js?v=vGPT_2.20.0';
+import { ExtrasAnimation } from './extras-animation.js?v=vGPT_2.20.0';
+import { ProhibitionAnimation, prohibitionGeometry } from './prohibition-animation.js?v=vGPT_2.20.0';
+import { DisplayController } from './display-controller.js?v=vGPT_2.20.0';
+import { bindHoldControl } from './hold-control.js?v=vGPT_2.20.0';
+import { startUpdates } from './updates.js?v=vGPT_2.20.0';
+import { BrightnessControl } from './brightness.js?v=vGPT_2.20.0';
+import { DisplayLayout, layoutGeometry } from './display-layout.js?v=vGPT_2.20.0';
+import { DateFlap } from './date-flap.js?v=vGPT_2.20.0';
+import { SceneBlackout } from './scene-blackout.js?v=vGPT_2.20.0';
+import { MusicSlide } from './music-slide.js?v=vGPT_2.20.0';
 
-const APP_VERSION='vGPT_2.19.2';
+const APP_VERSION='vGPT_2.20.0';
 const stage = document.querySelector('.stage');
 const root = stage.querySelector('.clock');
 const signs = stage.querySelector('.signs');
@@ -25,7 +25,7 @@ const layoutToggle = stage.querySelector('.layout-toggle');
 const clockOnlyToggle = stage.querySelector('.clock-only-toggle');
 let layoutStorage=null;try{layoutStorage=window.localStorage;}catch{/* Device-local preference is optional. */}
 const layout = new DisplayLayout({stage,clock:root,signs,document,storage:layoutStorage});
-const brightness = new BrightnessControl({version:APP_VERSION});
+const brightness = new BrightnessControl({version:APP_VERSION,onTaxiChange:()=>controller?.extrasPreferenceChanged()});
 brightness.attach(root);
 brightness.attach(signs);
 const modules = Array.from(root.querySelectorAll('.digit'), element => new Flap(element));
@@ -57,12 +57,10 @@ function fitViewport() {
   const height = viewport ? viewport.height : window.innerHeight;
   Object.assign(stage.style, {width:width+'px',height:height+'px',left:(viewport ? viewport.offsetLeft : 0)+'px',top:(viewport ? viewport.offsetTop : 0)+'px'});
   const style = getComputedStyle(root);
-  const {gap,cardHeight,digitSize,signSize,driverStatusLeft,driverStatusCenterY}=layoutGeometry(width,height,layout.portrait,{top:parseFloat(style.paddingTop),bottom:parseFloat(style.paddingBottom),left:parseFloat(style.paddingLeft),right:parseFloat(style.paddingRight)});
+  const {gap,cardHeight,digitSize,signSize}=layoutGeometry(width,height,layout.portrait,{top:parseFloat(style.paddingTop),bottom:parseFloat(style.paddingBottom),left:parseFloat(style.paddingLeft),right:parseFloat(style.paddingRight)});
   stage.style.setProperty('--gap', gap+'px');
   stage.style.setProperty('--card-height',cardHeight+'px');
   stage.style.setProperty('--digit-size',digitSize+'px');
-  document.documentElement.style.setProperty('--driver-status-left',(driverStatusLeft+(viewport?viewport.offsetLeft:0))+'px');
-  document.documentElement.style.setProperty('--driver-status-center-y',(driverStatusCenterY+(viewport?viewport.offsetTop:0))+'px');
   const signStyle=getComputedStyle(signs);
   const landscapeSize=prohibitionGeometry({width,height,size:Math.min(width,height),left:parseFloat(signStyle.paddingLeft)||0,right:parseFloat(signStyle.paddingRight)||0,top:parseFloat(signStyle.paddingTop)||0,bottom:parseFloat(signStyle.paddingBottom)||0,gap:parseFloat(signStyle.columnGap)||6}).size;
   stage.style.setProperty('--sign-size',(layout.portrait?signSize:Math.floor(landscapeSize))+'px');
@@ -120,7 +118,7 @@ const clock = new Clock({update(time,{animate}) {
   controller?.onClockMinute(time,{natural:animate,completed:Promise.all(modules.map(module=>module.whenFinished()))});
 }});
 function settleClock() { clock.stop(); modules.forEach(module=>module.finish()); }
-const extras = new ExtrasAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
+const extras = new ExtrasAnimation(signs,{reducedMotion:()=>reducedMotion.matches,cameraEnabled:()=>!brightness.taxiMode});
 const prohibitions = new ProhibitionAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 const confirmation = new ConfirmationAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
 const buckle = new SeatBeltAnimation(signs,{reducedMotion:()=>reducedMotion.matches});
@@ -148,7 +146,7 @@ function cancelVisuals(completeInsertion=false) {
   if(!layout.portrait||document.hidden||suspended)settleClock();
   interrupting = false;
 }
-controller = new DisplayController({continuous:()=>layout.portrait,storage:layoutStorage,effects:{
+controller = new DisplayController({continuous:()=>layout.portrait,cameraEnabled:()=>!brightness.taxiMode,storage:layoutStorage,effects:{
   clockOnly:updateClockOnlyControl,
   dimBelts:bright=>{signs.dataset.alarmBright=String(bright);},
   async fadeToBlack({animate}){
@@ -201,7 +199,11 @@ controller = new DisplayController({continuous:()=>layout.portrait,storage:layou
   cancel:()=>cancelVisuals(false),
   idle:()=>{remote?.clockRestored();checkForUpdates();}
 }});
-music=new MusicSlide({eligible:()=>started&&!layout.portrait&&!controller.suspended&&!remote?.listening?.active&&!controller.state.kind.startsWith('PASSENGER')});
+music=new MusicSlide({onMode:action=>{
+  if(controller.state.kind.startsWith('PASSENGER'))return;
+  if(action==='SOLO'){if(remote)remote.localClockOnly();else controller.enterClockOnly();}
+  else if(remote)remote.startPresentation();else controller.beginPresentation();
+},eligible:()=>started&&!layout.portrait&&!controller.suspended&&!remote?.listening?.active&&!controller.state.kind.startsWith('PASSENGER')});
 brightness.attach(music.view);
 function updateClockOnlyControl(value){
   clockOnlyToggle.setAttribute('aria-pressed',String(value));
@@ -278,7 +280,7 @@ async function loadRemote({show=false}={}) {
   if(remote){if(show)remote.show();return remote;}
   if(!remoteLoading)remoteLoading=(async()=>{
     const [{RemoteDisplay},response]=await Promise.all([
-      import('./remote/display.bundle.js?v=vGPT_2.19.2'),fetch('./firebase-config.json')
+      import('./remote/display.bundle.js?v=vGPT_2.20.0'),fetch('./firebase-config.json')
     ]);
     if(!response.ok)throw new Error('Remote configuration unavailable');
     const {config}=await response.json();

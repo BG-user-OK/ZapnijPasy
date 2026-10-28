@@ -1,5 +1,6 @@
-// Zapnij Pasy vGPT_2.19.2 — one cancellable camera/rolling-piggy timeline.
+// Zapnij Pasy vGPT_2.20.0 — one cancellable camera/rolling-piggy timeline.
 export const EXTRAS_DURATION=60000;
+export const PIGGY_DURATION=19000;
 export const EXTRAS_STEPS=Object.freeze([
  {name:'camera-enter',start:0,end:4000},{name:'camera-visible',start:4000,end:34000},
  {name:'camera-exit',start:34000,end:38000},{name:'black',start:38000,end:41000},
@@ -15,8 +16,8 @@ export function extrasGeometry({width,height,size,marginX=12,marginY=10}) {
   rollStart:(width-centerX)/(diameter/2)*180/Math.PI,rollEnd:(-diameter-centerX)/(diameter/2)*180/Math.PI};
 }
 export class ExtrasAnimation {
- constructor(host,{reducedMotion=()=>false,now=()=>Date.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id),measure}={}) {
-  this.host=host;this.reducedMotion=reducedMotion;this.now=now;this.schedule=schedule;this.cancelTimer=cancel;this.pending=null;this.startedAt=0;this.duration=EXTRAS_DURATION;
+ constructor(host,{reducedMotion=()=>false,now=()=>Date.now(),schedule=(fn,ms)=>setTimeout(fn,ms),cancel=id=>clearTimeout(id),measure,cameraEnabled=()=>true}={}) {
+  this.cameraEnabled=cameraEnabled;this.host=host;this.reducedMotion=reducedMotion;this.now=now;this.schedule=schedule;this.cancelTimer=cancel;this.pending=null;this.startedAt=0;this.duration=EXTRAS_DURATION;
   this.measure=measure||(()=>{
    const rect=host.getBoundingClientRect(),style=getComputedStyle(host);
    return {width:rect.width,height:rect.height,size:Math.min(rect.width,rect.height),
@@ -44,12 +45,13 @@ export class ExtrasAnimation {
  apply(elapsed){
   const scene=this.prepare();scene.classList.remove('is-extras-running');
   for(const actor of scene.querySelectorAll('.extras-camera,.extras-piggy,.extras-piggy img')){actor.style.removeProperty('transform');actor.style.removeProperty('opacity');}
-  scene.style.setProperty('--extras-delay',-elapsed+'ms');scene.style.setProperty('--piggy-delay',(41000*this.duration/EXTRAS_DURATION-elapsed)+'ms');scene.style.setProperty('--camera-duration',(38000*this.duration/EXTRAS_DURATION)+'ms');scene.style.setProperty('--piggy-duration',(19000*this.duration/EXTRAS_DURATION)+'ms');
+  const camera=this.cameraEnabled();scene.classList.toggle('is-piggy-only',!camera);
+  scene.style.setProperty('--extras-delay',-elapsed+'ms');scene.style.setProperty('--piggy-delay',((camera?41000*this.duration/EXTRAS_DURATION:0)-elapsed)+'ms');scene.style.setProperty('--camera-duration',(38000*this.duration/EXTRAS_DURATION)+'ms');scene.style.setProperty('--piggy-duration',(camera?19000*this.duration/EXTRAS_DURATION:this.duration)+'ms');
   scene.classList.toggle('is-extras-reduced',this.reducedMotion());this.configure();
   void scene.offsetHeight;scene.classList.add('is-extras-running');
  }
- play({elapsed=0,duration=EXTRAS_DURATION}={}) {
-  this.cancel();this.duration=Number.isFinite(duration)?Math.max(30000,Math.min(120000,duration)):EXTRAS_DURATION;elapsed=Math.max(0,Math.min(this.duration,elapsed));this.startedAt=this.now()-elapsed;
+ play({elapsed=0,duration=this.cameraEnabled()?EXTRAS_DURATION:PIGGY_DURATION}={}) {
+  this.cancel();this.duration=Number.isFinite(duration)?Math.max(this.cameraEnabled()?30000:PIGGY_DURATION,Math.min(120000,duration)):EXTRAS_DURATION;elapsed=Math.max(0,Math.min(this.duration,elapsed));this.startedAt=this.now()-elapsed;
   this.apply(elapsed);
   if(elapsed>=this.duration){this.finish(true);return Promise.resolve(true);}
   return new Promise(resolve=>{this.pending={resolve,timer:this.schedule(()=>this.finish(true),this.duration-elapsed+150)};});
