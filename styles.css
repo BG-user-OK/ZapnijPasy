@@ -1,4 +1,4 @@
-/* Zapnij Pasy vGPT_2.20.1 */
+/* Zapnij Pasy vGPT_2.20.2 */
 :root {
   color-scheme: dark;
   --page: #08090b;
@@ -312,7 +312,7 @@ body { position: fixed; inset: 0; -webkit-text-size-adjust: 100%; -webkit-user-s
 
 .brightness-heading{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;min-height:36px}
 .brightness-heading .brightness-title{grid-column:2}
-.itaxi-toggle{grid-column:3;justify-self:center;min-width:38px;min-height:34px;padding:3px 5px;border:2px solid #67717a;border-radius:8px;background:#23292f;color:#a8adb1;font:700 16px system-ui;touch-action:manipulation}
-.itaxi-toggle[aria-pressed="true"]{border-color:#9baebd;background:#738fa4;color:#111418;box-shadow:0 0 0 3px #728da333}
-.itaxi-toggle:focus-visible{outline:2px solid #8a9aa6;outline-offset:3px}
+.camera-skip-toggle{grid-column:3;justify-self:center;min-width:38px;min-height:34px;padding:3px 5px;border:2px solid #67717a;border-radius:8px;background:#23292f;color:#a8adb1;font:700 16px system-ui;touch-action:manipulation}
+.camera-skip-toggle[aria-pressed="true"]{border-color:#9baebd;background:#738fa4;color:#111418;box-shadow:0 0 0 3px #728da333}
+.camera-skip-toggle:focus-visible{outline:2px solid #8a9aa6;outline-offset:3px}
 .extras-scene.is-piggy-only .extras-camera{display:none!important}

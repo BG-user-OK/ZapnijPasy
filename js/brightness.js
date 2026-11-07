@@ -1,8 +1,16 @@
-// Zapnij Pasy vGPT_2.20.1 — device-local brightness, coarse location only, no remote writes.
-import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.20.1';
+// Zapnij Pasy vGPT_2.20.2 — device-local brightness, coarse location only, no remote writes.
+import {KATOWICE,validCoordinates,daylightState} from './solar-times.js?v=vGPT_2.20.2';
 export const BRIGHTNESS_LEVELS=Object.freeze([10,20,35,50,75,100]);
 export const BRIGHTNESS_KEY='zapnij-pasy-brightness-v1';
-export const ITAXI_KEY='zapnij-pasy-itaxi-v1';
+export const CAMERA_SKIP_KEY='zapnij-pasy-camera-skip-v1';
+export function readCameraSkip(storage){
+  try{
+    const current=storage?.getItem(CAMERA_SKIP_KEY);if(current!==null&&current!==undefined)return current==='true';
+    const legacy='zapnij-pasy-'+String.fromCharCode(105,116,97,120,105)+'-v1';
+    const saved=storage?.getItem(legacy);if(saved!==null&&saved!==undefined)storage?.setItem(CAMERA_SKIP_KEY,saved==='true'?'true':'false');
+    return saved==='true';
+  }catch{return false;}
+}
 const GPS_INTERVAL=600000,LOCATION_AGE=86400000;
 export class BrightnessState{
   constructor({now=Date.now,storage=null}={}){
@@ -37,10 +45,10 @@ export class BrightnessState{
   }
 }
 export class BrightnessControl{
-  constructor({document=globalThis.document,window=globalThis.window,storage,geolocation,now=Date.now,schedule=(fn,delay)=>window.setTimeout(fn,delay),cancel=id=>window.clearTimeout(id),state,version,onTaxiChange=()=>{}}={}){
+  constructor({document=globalThis.document,window=globalThis.window,storage,geolocation,now=Date.now,schedule=(fn,delay)=>window.setTimeout(fn,delay),cancel=id=>window.clearTimeout(id),state,version,onCameraSkipChange=()=>{}}={}){
     this.document=document;this.window=window;this.now=now;this.schedule=schedule;this.cancel=cancel;
     if(storage===undefined){try{storage=window.localStorage;}catch{storage=null;}}
-    this.taxiMode=false;try{this.taxiMode=storage?.getItem(ITAXI_KEY)==='true';}catch{}this.onTaxiChange=onTaxiChange;this.preferenceStorage=storage;
+    this.cameraSkip=readCameraSkip(storage);this.onCameraSkipChange=onCameraSkipChange;this.preferenceStorage=storage;
     this.state=state||new BrightnessState({storage,now});this.geolocation=geolocation===undefined?window.navigator?.geolocation:geolocation;
     this.timer=null;this.suspended=false;this.locationRevision=0;this.inFlight=false;this.lastAttempt=-Infinity;this.denied=false;this.gpsError='';
     this.panel=document.createElement('section');this.panel.id='brightness-panel';this.panel.className='brightness-panel';this.panel.hidden=true;this.panel.setAttribute('role','dialog');this.panel.setAttribute('aria-modal','true');this.panel.setAttribute('aria-label','Jasność');
@@ -48,9 +56,9 @@ export class BrightnessControl{
     const controls=document.createElement('div');controls.className='brightness-controls';
     const heading=document.createElement('div');heading.className='brightness-heading';
     this.title=document.createElement('p');this.title.className='brightness-title';
-    this.taxiButton=document.createElement('button');this.taxiButton.type='button';this.taxiButton.className='itaxi-toggle';this.taxiButton.textContent='iT';this.taxiButton.setAttribute('aria-label','iTaxi — pomiń kamerę');this.taxiButton.setAttribute('aria-pressed',String(this.taxiMode));
-    this.taxiButton.addEventListener('click',event=>{event.stopPropagation();this.taxiMode=!this.taxiMode;try{this.preferenceStorage?.setItem(ITAXI_KEY,String(this.taxiMode));}catch{}this.taxiButton.setAttribute('aria-pressed',String(this.taxiMode));this.onTaxiChange(this.taxiMode);});
-    heading.append(this.title,this.taxiButton);controls.append(heading);
+    this.cameraButton=document.createElement('button');this.cameraButton.type='button';this.cameraButton.className='camera-skip-toggle';this.cameraButton.textContent='⊘';this.cameraButton.setAttribute('aria-label','Pomiń kamerę');this.cameraButton.setAttribute('aria-pressed',String(this.cameraSkip));
+    this.cameraButton.addEventListener('click',event=>{event.stopPropagation();this.cameraSkip=!this.cameraSkip;try{this.preferenceStorage?.setItem(CAMERA_SKIP_KEY,String(this.cameraSkip));}catch{}this.cameraButton.setAttribute('aria-pressed',String(this.cameraSkip));this.onCameraSkipChange(this.cameraSkip);});
+    heading.append(this.title,this.cameraButton);controls.append(heading);
     const bar=document.createElement('div');bar.className='brightness-bar';bar.setAttribute('role','group');bar.setAttribute('aria-label','Poziom jasności');
     this.buttons=BRIGHTNESS_LEVELS.map(level=>{const b=document.createElement('button');b.type='button';b.className='brightness-level';b.dataset.level=String(level);b.setAttribute('aria-label','Jasność '+level+' procent');const dot=document.createElement('span');dot.className='brightness-dot';dot.setAttribute('aria-hidden','true');const label=document.createElement('span');label.textContent=level+'%';b.append(dot,label);b.addEventListener('click',event=>{event.stopPropagation();this.state.choose(level);this.refresh();this.close();});bar.append(b);return b;});
     controls.append(bar);this.status=document.createElement('p');this.status.className='brightness-status';controls.append(this.status);

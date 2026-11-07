@@ -1,19 +1,24 @@
-// Zapnij Pasy vGPT_2.20.1
-const VERSION = 'vGPT_2.20.1';
+// Zapnij Pasy vGPT_2.20.2
+const VERSION = 'vGPT_2.20.2';
 const PREFIX = 'zapnij-pasy-';
 const CACHE = PREFIX + VERSION;
 const BASE = '/ZapnijPasy/';
-const SHELL = ['./js/music-slide.js?v=vGPT_2.20.1','./js/date-flap.js?v=vGPT_2.20.1','./js/scene-blackout.js?v=vGPT_2.20.1','./js/prohibition-animation.js?v=vGPT_2.20.1','./js/display-layout.js?v=vGPT_2.20.1','./js/brightness.js?v=vGPT_2.20.1','./js/solar-times.js?v=vGPT_2.20.1','./js/extras-animation.js?v=vGPT_2.20.1','./js/confirmation-animation.js?v=vGPT_2.20.1','./Grafiki/signs/thumbs-up.svg','./js/hold-control.js?v=vGPT_2.20.1','./js/remote/display.bundle.js?v=vGPT_2.20.1','./js/remote/transport.bundle.js?v=vGPT_2.20.1','./firebase-config.json','./pilot-proof.html','./pilot-proof.js?v=vGPT_2.20.1','./index.html','./styles.css?v=vGPT_2.20.1','./js/app.js?v=vGPT_2.20.1','./js/clock.js?v=vGPT_2.20.1','./js/flap.js?v=vGPT_2.20.1','./js/updates.js?v=vGPT_2.20.1','./js/view-transition.js?v=vGPT_2.20.1','./js/display-controller.js?v=vGPT_2.20.1','./js/seat-belt-animation.js?v=vGPT_2.20.1','./Grafiki/signs/buckle-base.png','./Grafiki/signs/buckle-tongue.png','./Grafiki/signs/seat-belt.png','./Grafiki/signs/no-food-drink.png','./Grafiki/signs/no-smoking-vaping.png','./Grafiki/signs/cctv.png','./Grafiki/signs/tip.png','./manifest.webmanifest','./Grafiki/icons/apple-touch-icon.png','./Grafiki/icons/icon-192.png','./Grafiki/icons/icon-512.png','./Grafiki/icons/maskable-512.png'];
+const SHELL = ['./js/music-slide.js?v=vGPT_2.20.2','./js/date-flap.js?v=vGPT_2.20.2','./js/scene-blackout.js?v=vGPT_2.20.2','./js/prohibition-animation.js?v=vGPT_2.20.2','./js/display-layout.js?v=vGPT_2.20.2','./js/brightness.js?v=vGPT_2.20.2','./js/solar-times.js?v=vGPT_2.20.2','./js/extras-animation.js?v=vGPT_2.20.2','./js/confirmation-animation.js?v=vGPT_2.20.2','./Grafiki/signs/thumbs-up.svg','./js/hold-control.js?v=vGPT_2.20.2','./js/remote/display.bundle.js?v=vGPT_2.20.2','./js/remote/transport.bundle.js?v=vGPT_2.20.2','./firebase-config.json','./index.html','./styles.css?v=vGPT_2.20.2','./js/app.js?v=vGPT_2.20.2','./js/clock.js?v=vGPT_2.20.2','./js/flap.js?v=vGPT_2.20.2','./js/updates.js?v=vGPT_2.20.2','./js/view-transition.js?v=vGPT_2.20.2','./js/display-controller.js?v=vGPT_2.20.2','./js/seat-belt-animation.js?v=vGPT_2.20.2','./Grafiki/signs/buckle-base.png','./Grafiki/signs/buckle-tongue.png','./Grafiki/signs/seat-belt.png','./Grafiki/signs/no-food-drink.png','./Grafiki/signs/no-smoking-vaping.png','./Grafiki/signs/cctv.png','./Grafiki/signs/tip.png','./manifest.webmanifest','./Grafiki/icons/apple-touch-icon.png','./Grafiki/icons/icon-192.png','./Grafiki/icons/icon-512.png','./Grafiki/icons/maskable-512.png'];
 const URLS = new Set(SHELL.map(path => new URL(path, self.location).href));
 // Keep older already-open views working until their cached release can be safely retired.
 const LEGACY_GRAPHICS = new Set(SHELL.filter(path => path.startsWith('./Grafiki/') && path.endsWith('.png')).map(path => new URL(path.replace('./Grafiki/signs/','./assets/signs/').replace('./Grafiki/icons/','./icons/'), self.location).href));
+const RUNTIME_PATHS = new Set([...URLS].map(url=>new URL(url).pathname));
 const readyClients = new Set();
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL.map(path => new Request(new URL(path,self.location).href,{cache:'reload'})))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', event => {
   // Retain previous bundles until every open app window acknowledges this release.
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith(PREFIX)).map(async key=>{
+    const cache=await caches.open(key);for(const request of await cache.keys()){
+      const url=new URL(request.url);if(url.origin===self.location.origin&&url.pathname.startsWith(BASE)&&!RUNTIME_PATHS.has(url.pathname)&&!LEGACY_GRAPHICS.has(url.href))await cache.delete(request);
+    }
+  }))) ]));
 });
 self.addEventListener('message', event => {
   if (event.data?.type === 'ACTIVATE_UPDATE') { event.waitUntil(self.skipWaiting()); return; }
@@ -27,7 +32,7 @@ self.addEventListener('message', event => {
 });
 async function navigation(request) {
   const cache = await caches.open(CACHE);
-  const fallback = await cache.match(new URL(new URL(request.url).pathname.endsWith('/pilot-proof.html')?'./pilot-proof.html':'./index.html',self.location).href);
+  const fallback = await cache.match(new URL('./index.html',self.location).href);
   const controller = new AbortController();
   let timer;
   try {
@@ -61,7 +66,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE)) return;
   // APK installation is online-only and must never become a cached clock navigation.
-  if (url.pathname === BASE + 'pilot-install.html' || url.pathname.startsWith(BASE + 'downloads/')) return;
+  if (!RUNTIME_PATHS.has(url.pathname) && url.pathname !== BASE && !LEGACY_GRAPHICS.has(url.href)) { event.respondWith(Promise.resolve(new Response('',{status:404}))); return; }
   if (event.request.mode === 'navigate') event.respondWith(navigation(event.request));
   else if (URLS.has(url.href) || LEGACY_GRAPHICS.has(url.href) || (/\.(js|css)$/.test(url.pathname) && /^(?:vGPT_)?\d+\.\d+\.\d+$/.test(url.searchParams.get('v') || ''))) event.respondWith(asset(event.request));
 });
